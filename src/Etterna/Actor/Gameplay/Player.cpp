@@ -60,19 +60,19 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 			defaultValueOut = 0.0165F;
 			break;
 		case TW_W2:
-			defaultValueOut = 0.0405F;
+			defaultValueOut = 0.0645F;
 			break;
 		case TW_W3:
-			defaultValueOut = 0.0735F;
+			defaultValueOut = 0.0975F;
 			break;
 		case TW_W4:
-			defaultValueOut = 0.1035F;
-			break;
-		case TW_W5:
 			defaultValueOut = 0.1275F;
 			break;
+		case TW_W5:
+			defaultValueOut = 0.1515F;
+			break;
 		case TW_Miss:
-			defaultValueOut = 0.1645F;
+			defaultValueOut = 0.1885F;
 			break;
 		case TW_Mine:
 			// ~same as j5 great, the explanation for this is quite long but
@@ -96,7 +96,7 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 	}
 }
 
-static Preference<float> m_fTimingWindowScale("TimingWindowScale", 1.0F);
+static Preference<float> m_fTimingWindowScale("TimingWindowScale", 8.0F);
 static Preference<float> m_fTimingWindowAdd("TimingWindowAdd", 0);
 static Preference1D<float> m_fTimingWindowSeconds(TimingWindowSecondsInit,
 												  NUM_TimingWindow);
@@ -204,8 +204,10 @@ Player::GetWindowSeconds(TimingWindow tw) -> float
 	// prefs.ini
 
 	float fSecs = m_fTimingWindowSeconds[tw];
-	fSecs *= m_fTimingWindowScale;
-	fSecs += m_fTimingWindowAdd;
+	if (tw != TW_W1 && m_fTimingWindowScale != 0.0F)
+	{
+		fSecs -= m_fTimingWindowScale * 3 / 1000;
+	}
 	return fSecs;
 }
 

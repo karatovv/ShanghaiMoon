@@ -441,7 +441,7 @@ TimingWindowScale(int& sel, bool ToSel, const ConfOption* pConfOption)
 	// we are no longer supporting j1-3, they will be set to 1.f like j4
 	// to avoid issues with expected array sizes that i do not want to debug
 	auto& ts = GAMESTATE->timingscales;
-	float mapping[9]; // hardcodered because ide yell at me
+	float mapping[11]; // hardcodered because ide yell at me
 	for (size_t i = 0; i < ts.size(); ++i)
 		mapping[i] = ts[i];
 	MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
@@ -858,15 +858,17 @@ InitializeConfOptions()
 	// Machine options
 	ADD(ConfOption("TimingWindowScale",
 				   TimingWindowScale,
-				   "|1",
-				   "|2",
-				   "|3",
-				   "|4",
-				   "|5",
-				   "|6",
-				   "|7",
-				   "|8",
-				   "Justice"));
+				   "|OD0",
+				   "|OD1",
+				   "|OD2",
+				   "|OD3",
+				   "|OD4",
+				   "|OD5",
+				   "|OD6",
+				   "|OD7",
+				   "|OD8",
+				   "|OD9",
+				   "|OD10"));
 	ADD(ConfOption("LifeDifficulty",
 				   LifeDifficulty,
 				   "|1",

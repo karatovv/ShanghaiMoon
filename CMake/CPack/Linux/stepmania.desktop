@@ -1,10 +1,10 @@
 
 [Desktop Entry]
 Encoding=UTF-8
-Name=Etterna
+Name=ShanghaiMoon
 GenericName=Rhythm and dance game
-TryExec=Etterna
-Exec=Etterna
+TryExec=ShanghaiMoon
+Exec=ShanghaiMoon
 Terminal=false
 Icon=Etterna
 Type=Application
