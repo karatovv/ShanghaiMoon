@@ -5,6 +5,7 @@
 #include "Etterna/Models/Misc/Game.h"
 #include "Etterna/Models/Misc/GameCommand.h"
 #include "Etterna/Models/Misc/GameConstantsAndTypes.h"
+#include "Etterna/Models/Misc/NoteTypes.h"
 #include "Etterna/Singletons/GameSoundManager.h"
 #include "Etterna/Singletons/GameState.h"
 #include "Etterna/Singletons/InputMapper.h"
@@ -96,7 +97,8 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 	}
 }
 
-static Preference<float> m_fTimingWindowScale("TimingWindowScale", 8.0F);
+static Preference<float> m_fTimingWindowScale("TimingWindowScale", 1.0F);
+static Preference<float> m_fOsuOD("OsuOD", 8.0F);
 static Preference<float> m_fTimingWindowAdd("TimingWindowAdd", 0);
 static Preference1D<float> m_fTimingWindowSeconds(TimingWindowSecondsInit,
 												  NUM_TimingWindow);
@@ -204,9 +206,9 @@ Player::GetWindowSeconds(TimingWindow tw) -> float
 	// prefs.ini
 
 	float fSecs = m_fTimingWindowSeconds[tw];
-	if (tw != TW_W1 && m_fTimingWindowScale != 0.0F)
+	if (tw != TW_W1 && m_fOsuOD != 0.0F)
 	{
-		fSecs -= m_fTimingWindowScale * 3 / 1000;
+		fSecs -= m_fOsuOD * 3 / 1000;
 	}
 	return fSecs;
 }
@@ -458,10 +460,10 @@ Player::NeedsTapJudging(const TapNote& tn) -> bool
 		DEFAULT_FAIL(tn.type);
 		case TapNoteType_Tap:
 		case TapNoteType_HoldHead:
+		case TapNoteType_HoldTail:
 		case TapNoteType_Mine:
 		case TapNoteType_Lift:
 			return tn.result.tns == TNS_None;
-		case TapNoteType_HoldTail:
 		case TapNoteType_AutoKeysound:
 		case TapNoteType_Fake:
 		case TapNoteType_Empty:

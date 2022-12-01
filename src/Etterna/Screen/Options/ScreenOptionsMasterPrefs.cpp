@@ -468,7 +468,7 @@ GetTimingDifficulty()
 {
 	int iTimingDifficulty = 0;
 	TimingWindowScale(
-	  iTimingDifficulty, true, ConfOption::Find("TimingWindowScale"));
+	  iTimingDifficulty, true, ConfOption::Find("OsuOD"));
 	iTimingDifficulty++; // TimingDifficulty returns an index
 	return iTimingDifficulty;
 }
@@ -477,8 +477,8 @@ static int
 SetTimingDifficulty(float judge)
 {
 	int iTimingDifficulty = static_cast<int>(judge);
-	auto opt = ConfOption::Find("TimingWindowScale");
-	IPreference* pPref = IPreference::GetPreferenceByName(opt->m_sPrefName);
+	auto opt = ConfOption::Find("OsuOD");
+	IPreference* pPref = IPreference::GetPreferenceByName("osuOD");
 	pPref->FromString(ToString(judge));
 	return 1;
 }
@@ -856,7 +856,7 @@ InitializeConfOptions()
 	ADD(ConfOption("EnableMinidumpUpload", MovePref<bool>, "Off", "On"));
 
 	// Machine options
-	ADD(ConfOption("TimingWindowScale",
+	ADD(ConfOption("OsuOD",
 				   TimingWindowScale,
 				   "|OD0",
 				   "|OD1",

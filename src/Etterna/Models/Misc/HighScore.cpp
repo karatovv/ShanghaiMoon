@@ -153,11 +153,11 @@ HighScoreImpl::GetWifeGrade() const -> Grade
 		return Grade_Failed;
 	}
 
-	auto pc = fWifeScore;
+	auto pc = fPercentDP;
 
-	if (PREFSMAN->m_bSortBySSRNorm) {
-		pc = fSSRNormPercent;
-	}
+	//if (PREFSMAN->m_bSortBySSRNorm) {
+	//	pc = fSSRNormPercent;
+	//}
 
 	return GetGradeFromPercent(pc);
 }
@@ -1754,7 +1754,7 @@ HighScore::RescoreToWife3(float pmax) -> bool
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
 				p4 += wife3(m_Impl->vOffsetVector[i], 1);
-				pj += wife3(m_Impl->vOffsetVector[i], m_Impl->fJudgeScale);
+				pj += wife3(m_Impl->vOffsetVector[i], 1);
 			}
 		}
 	} else {
@@ -1847,7 +1847,7 @@ HighScore::NormalizeJudgments() -> bool
 	if (!IsEmptyNormalized())
 		return true;
 
-	// Normalizing to J4, a J4 score needs no normalizing
+	// Normalizing to OD8, a OD8 score needs no normalizing
 	if (m_Impl->fJudgeScale == 1.F) {
 		FOREACH_ENUM(TapNoteScore, tns)
 		m_Impl->iTapNoteScoresNormalized[tns] = m_Impl->iTapNoteScores[tns];
@@ -1881,15 +1881,15 @@ HighScore::NormalizeJudgments() -> bool
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
 				const auto x = std::abs(m_Impl->vOffsetVector[i] * 1000.F);
-				if (x <= 22.5F) {
+				if (x <= 16.5F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W1]++;
-				} else if (x <= 45.F) {
+				} else if (x <= 40.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W2]++;
-				} else if (x <= 90.F) {
+				} else if (x <= 73.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W3]++;
-				} else if (x <= 135.F) {
+				} else if (x <= 103.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W4]++;
-				} else if (x <= 180.F) {
+				} else if (x <= 127.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W5]++;
 				} else {
 					// should anything outside the window be treated as a boo?
