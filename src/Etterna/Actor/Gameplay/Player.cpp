@@ -576,6 +576,7 @@ Player::Load()
 
 	if (m_pPlayerStageStats != nullptr) {
 		m_pPlayerStageStats->m_fTimingScale = m_fTimingWindowScale;
+		m_pPlayerStageStats->m_fOsuOD = m_fOsuOD;
 	}
 
 	/* Apply transforms. */

@@ -58,6 +58,7 @@ PlayerStageStats::InternalInit()
 	CurWifeScore = 0.f;
 	MaxWifeScore = 0.f;
 	m_fTimingScale = 0.f;
+	m_fOsuOD = 0.f;
 	m_vOffsetVector.clear();
 	m_vNoteRowVector.clear();
 	m_vTrackVector.clear();
@@ -366,6 +367,11 @@ float
 PlayerStageStats::GetTimingScale() const
 {
 	return m_fTimingScale;
+}
+float
+PlayerStageStats::GetOsuOD() const
+{
+	return m_fOsuOD;
 }
 std::vector<InputDataEvent>
 PlayerStageStats::GetInputDataVector() const

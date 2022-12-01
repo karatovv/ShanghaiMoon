@@ -409,7 +409,7 @@ t[#t + 1] = Def.ActorFrame {
 		SetCommand = function(self)
 			local online = IsNetSMOnline() and IsSMOnlineLoggedIn() and NSMAN:IsETTP()
 			self:y(AvatarY + 41 - (online and 18 or 0))
-			self:settextf("%s: %s", translated_info["Judge"], GetTimingDifficulty())
+			self:settextf("%s%s", translated_info["Judge"], GetTimingDifficulty())
 		end
 	},
 	UIElements.TextToolTip(1, 1, "Common Normal") .. {

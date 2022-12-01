@@ -470,7 +470,7 @@ GetTimingDifficulty()
 	TimingWindowScale(
 	  iTimingDifficulty, true, ConfOption::Find("OsuOD"));
 	iTimingDifficulty++; // TimingDifficulty returns an index
-	return iTimingDifficulty;
+	return (iTimingDifficulty - 1);
 }
 LuaFunction(GetTimingDifficulty, GetTimingDifficulty());
 static int

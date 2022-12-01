@@ -1823,7 +1823,7 @@ class LunaGameState : public Luna<GameState>
 	}
 	static int GetTimingScales(T* p, lua_State* L)
 	{
-		LuaHelpers::CreateTableFromArray(p->timingscales, L);
+		LuaHelpers::CreateTableFromArray(p->timingscaleswife, L);
 		return 1;
 	}
 	static int GetPreferredStepsType(T* p, lua_State* L)
