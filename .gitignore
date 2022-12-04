@@ -5,6 +5,7 @@
 .idea
 .cache
 /[Bb]uild
+/dbgbuild
 
 # Ignore executables (Linux, macOS, Windows)
 /Etterna
@@ -12,6 +13,9 @@
 /Etterna-MinSizeRelease
 /Etterna-RelWithDebInfo
 /ShanghaiMoon
+/ShanghaiMoon-debug
+/ShanghaiMoon-MinSizeRelease
+/ShanghaiMoon-RelWithDebInfo
 /*.app
 /*.exe
 

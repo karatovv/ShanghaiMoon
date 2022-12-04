@@ -2,7 +2,7 @@
 
 local judges = {"marv", "perf", "great", "good", "boo", "miss"}
 local tst = ms.JudgeScalers
-local judge = GetTimingDifficulty()
+local judge = 4
 local tso = tst[judge]
 
 local plotWidth, plotHeight = 400, 120

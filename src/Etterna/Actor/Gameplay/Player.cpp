@@ -5,6 +5,7 @@
 #include "Etterna/Models/Misc/Game.h"
 #include "Etterna/Models/Misc/GameCommand.h"
 #include "Etterna/Models/Misc/GameConstantsAndTypes.h"
+#include "Etterna/Models/Misc/NoteTypes.h"
 #include "Etterna/Singletons/GameSoundManager.h"
 #include "Etterna/Singletons/GameState.h"
 #include "Etterna/Singletons/InputMapper.h"
@@ -60,19 +61,19 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 			defaultValueOut = 0.0165F;
 			break;
 		case TW_W2:
-			defaultValueOut = 0.0405F;
+			defaultValueOut = 0.0645F;
 			break;
 		case TW_W3:
-			defaultValueOut = 0.0735F;
+			defaultValueOut = 0.0975F;
 			break;
 		case TW_W4:
-			defaultValueOut = 0.1035F;
-			break;
-		case TW_W5:
 			defaultValueOut = 0.1275F;
 			break;
+		case TW_W5:
+			defaultValueOut = 0.1515F;
+			break;
 		case TW_Miss:
-			defaultValueOut = 0.1645F;
+			defaultValueOut = 0.1885F;
 			break;
 		case TW_Mine:
 			// ~same as j5 great, the explanation for this is quite long but
@@ -97,6 +98,7 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 }
 
 static Preference<float> m_fTimingWindowScale("TimingWindowScale", 1.0F);
+static Preference<float> m_fOsuOD("OsuOD", 8.0F);
 static Preference<float> m_fTimingWindowAdd("TimingWindowAdd", 0);
 static Preference1D<float> m_fTimingWindowSeconds(TimingWindowSecondsInit,
 												  NUM_TimingWindow);
@@ -204,8 +206,10 @@ Player::GetWindowSeconds(TimingWindow tw) -> float
 	// prefs.ini
 
 	float fSecs = m_fTimingWindowSeconds[tw];
-	fSecs *= m_fTimingWindowScale;
-	fSecs += m_fTimingWindowAdd;
+	if (tw != TW_W1 && m_fOsuOD != 0.0F)
+	{
+		fSecs -= m_fOsuOD * 3 / 1000;
+	}
 	return fSecs;
 }
 
@@ -456,10 +460,10 @@ Player::NeedsTapJudging(const TapNote& tn) -> bool
 		DEFAULT_FAIL(tn.type);
 		case TapNoteType_Tap:
 		case TapNoteType_HoldHead:
+		case TapNoteType_HoldTail:
 		case TapNoteType_Mine:
 		case TapNoteType_Lift:
 			return tn.result.tns == TNS_None;
-		case TapNoteType_HoldTail:
 		case TapNoteType_AutoKeysound:
 		case TapNoteType_Fake:
 		case TapNoteType_Empty:
@@ -572,6 +576,7 @@ Player::Load()
 
 	if (m_pPlayerStageStats != nullptr) {
 		m_pPlayerStageStats->m_fTimingScale = m_fTimingWindowScale;
+		m_pPlayerStageStats->m_fOsuOD = m_fOsuOD;
 	}
 
 	/* Apply transforms. */

@@ -571,11 +571,12 @@ local function scoreBoard(pn, position)
 						self:settext("                             ")
 					else
 					local perc = score:GetWifeScore() * 100
+					local od = "osu!mania OD" .. score:GetOsuOD()
 					--local perc = score:GetWifeScore() * 100
 						self:settextf(
 							"%05.2f%% (%s)",
 							perc,
-							customWindow.name
+							od
 						)
 					end
 				end
@@ -950,9 +951,9 @@ local function scoreBoard(pn, position)
 			end
 		end,
 		ForceWindowMessageCommand = function(self)
-			marvelousTaps = getRescoredJudge(dvt, judge, 1)
-			perfectTaps = getRescoredJudge(dvt, judge, 2)
-			greatTaps = getRescoredJudge(dvt, judge, 3)
+			marvelousTaps = score:GetTapNoteScore(judges[1])
+			perfectTaps = score:GetTapNoteScore(judges[2])
+			greatTaps = score:GetTapNoteScore(judges[3])
 			self:playcommand("Set")
 		end,
 		ScoreChangedMessageCommand = function(self)

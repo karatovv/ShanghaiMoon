@@ -68,6 +68,7 @@ struct HighScoreImpl
 	float fMusicRate;
 	float fSongOffset;
 	float fJudgeScale;
+	float fOsuOD;
 	bool bNoChordCohesion;
 	bool bEtternaValid;
 	bool bUsedDS;
@@ -153,11 +154,11 @@ HighScoreImpl::GetWifeGrade() const -> Grade
 		return Grade_Failed;
 	}
 
-	auto pc = fWifeScore;
+	auto pc = fPercentDP;
 
-	if (PREFSMAN->m_bSortBySSRNorm) {
-		pc = fSSRNormPercent;
-	}
+	//if (PREFSMAN->m_bSortBySSRNorm) {
+	//	pc = fSSRNormPercent;
+	//}
 
 	return GetGradeFromPercent(pc);
 }
@@ -185,6 +186,7 @@ HighScoreImpl::HighScoreImpl()
 	fMusicRate = 0.F;
 	fSongOffset = 0.F; // not for saving, only for replays
 	fJudgeScale = 0.F;
+	fOsuOD = 0.F;
 	bEtternaValid = true;
 	vOffsetVector.clear();
 	vNoteRowVector.clear();
@@ -237,6 +239,7 @@ HighScoreImpl::CreateEttNode() const -> XNode*
 
 	pNode->AppendChild("SSRNormPercent", fSSRNormPercent);
 	pNode->AppendChild("JudgeScale", fJudgeScale);
+	pNode->AppendChild("OsuOD", fOsuOD);
 	pNode->AppendChild("NoChordCohesion", bNoChordCohesion);
 	pNode->AppendChild("EtternaValid", bEtternaValid);
 	if (bUsedDS) {
@@ -312,6 +315,7 @@ HighScoreImpl::LoadFromEttNode(const XNode* pNode)
 	pNode->GetChildValue("SSRNormPercent", fSSRNormPercent);
 	pNode->GetChildValue("Rate", fMusicRate);
 	pNode->GetChildValue("JudgeScale", fJudgeScale);
+	pNode->GetChildValue("OsuOD", fOsuOD);
 	pNode->GetChildValue("NoChordCohesion", bNoChordCohesion);
 	pNode->GetChildValue("EtternaValid", bEtternaValid);
 	auto dsSuccess = pNode->GetChildValue("DSFlag", bUsedDS);
@@ -1118,6 +1122,11 @@ HighScore::GetJudgeScale() const -> float
 	return m_Impl->fJudgeScale;
 }
 auto
+HighScore::GetOsuOD() const -> float
+{
+	return m_Impl->fOsuOD;
+}
+auto
 HighScore::GetChordCohesion() const -> bool
 {
 	return !m_Impl->bNoChordCohesion;
@@ -1373,6 +1382,11 @@ void
 HighScore::SetJudgeScale(float f)
 {
 	m_Impl->fJudgeScale = f;
+}
+void
+HighScore::SetOsuOD(float f)
+{
+	m_Impl->fOsuOD= f;
 }
 void
 HighScore::SetChordCohesion(bool b)
@@ -1754,7 +1768,7 @@ HighScore::RescoreToWife3(float pmax) -> bool
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
 				p4 += wife3(m_Impl->vOffsetVector[i], 1);
-				pj += wife3(m_Impl->vOffsetVector[i], m_Impl->fJudgeScale);
+				pj += wife3(m_Impl->vOffsetVector[i], 1);
 			}
 		}
 	} else {
@@ -1847,7 +1861,7 @@ HighScore::NormalizeJudgments() -> bool
 	if (!IsEmptyNormalized())
 		return true;
 
-	// Normalizing to J4, a J4 score needs no normalizing
+	// Normalizing to OD8, a OD8 score needs no normalizing
 	if (m_Impl->fJudgeScale == 1.F) {
 		FOREACH_ENUM(TapNoteScore, tns)
 		m_Impl->iTapNoteScoresNormalized[tns] = m_Impl->iTapNoteScores[tns];
@@ -1881,15 +1895,15 @@ HighScore::NormalizeJudgments() -> bool
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
 				const auto x = std::abs(m_Impl->vOffsetVector[i] * 1000.F);
-				if (x <= 22.5F) {
+				if (x <= 16.5F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W1]++;
-				} else if (x <= 45.F) {
+				} else if (x <= 40.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W2]++;
-				} else if (x <= 90.F) {
+				} else if (x <= 73.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W3]++;
-				} else if (x <= 135.F) {
+				} else if (x <= 103.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W4]++;
-				} else if (x <= 180.F) {
+				} else if (x <= 127.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W5]++;
 				} else {
 					// should anything outside the window be treated as a boo?
@@ -2005,6 +2019,11 @@ class LunaHighScore : public Luna<HighScore>
 	static auto GetJudgeScale(T* p, lua_State* L) -> int
 	{
 		lua_pushnumber(L, p->GetJudgeScale());
+		return 1;
+	}
+	static auto GetOsuOD(T* p, lua_State* L) -> int
+	{
+		lua_pushnumber(L, p->GetOsuOD());
 		return 1;
 	}
 	static auto GetDate(T* p, lua_State* L) -> int
@@ -2278,6 +2297,7 @@ class LunaHighScore : public Luna<HighScore>
 		ADD_METHOD(GetSkillsetSSR);
 		ADD_METHOD(GetMusicRate);
 		ADD_METHOD(GetJudgeScale);
+		ADD_METHOD(GetOsuOD);
 		ADD_METHOD(GetChordCohesion);
 		ADD_METHOD(GetDate);
 		ADD_METHOD(GetPlayedSeconds);

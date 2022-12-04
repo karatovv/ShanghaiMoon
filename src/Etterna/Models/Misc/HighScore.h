@@ -47,6 +47,7 @@ struct HighScore
 	[[nodiscard]] auto GetSSRNormPercent() const -> float;
 	[[nodiscard]] auto GetMusicRate() const -> float;
 	[[nodiscard]] auto GetJudgeScale() const -> float;
+	[[nodiscard]] auto GetOsuOD() const -> float;
 	[[nodiscard]] auto GetChordCohesion() const -> bool;
 	[[nodiscard]] auto GetEtternaValid() const -> bool;
 	[[nodiscard]] auto GetDSFlag() const -> bool;
@@ -114,6 +115,7 @@ struct HighScore
 	void SetSongOffset(float f);
 	void SetPlayedSeconds(float f);
 	void SetJudgeScale(float f);
+	void SetOsuOD(float f);
 	void SetChordCohesion(bool b);
 	void SetEtternaValid(bool b);
 	void SetDSFlag(bool b);

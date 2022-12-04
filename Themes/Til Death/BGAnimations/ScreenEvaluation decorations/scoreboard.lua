@@ -239,7 +239,8 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 			BeginCommand = function(self)
 				if hsTable[index] == nil then return end
 				local wv = hsTable[index]:GetWifeVers()
-				local wstring = "OD8"
+				local od = hsTable[index]:GetOsuOD()
+				local wstring = "OD" .. od
 				if usingSSRSort then
 					wstring = "OD8"
 				end

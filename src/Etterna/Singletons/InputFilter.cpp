@@ -209,8 +209,8 @@ InputFilter::ButtonPressed(const DeviceInput& di)
 		return;
 	}
 	if (di.button >= NUM_DeviceButton) {
-		Locator::getLogger()->warn(
-		  "InputFilter::ButtonPressed: Invalid button {}", di.button);
+		//Locator::getLogger()->warn(
+		//  "InputFilter::ButtonPressed: Invalid button {}", di.button);
 		return;
 	}
 

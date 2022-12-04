@@ -45,10 +45,10 @@ set(WITH_CRASHPAD TRUE CACHE BOOL "Compile with Crash Handler (Requires depot_to
 ### as we want the executable to be "Etterna" regardless of which version is deployed.
 if(NOT DEFINED ENV{CI})
     set_target_properties(Etterna PROPERTIES
-            RUNTIME_OUTPUT_NAME_DEBUG "Etterna-debug"
+            RUNTIME_OUTPUT_NAME_DEBUG "ShanghaiMoon-debug"
             RUNTIME_OUTPUT_NAME_RELEASE "ShanghaiMoon"
-            RUNTIME_OUTPUT_NAME_MINSIZEREL "Etterna-MinSizeRelease"
-            RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "Etterna-RelWithDebInfo")
+            RUNTIME_OUTPUT_NAME_MINSIZEREL "ShanghaiMoon-MinSizeRelease"
+            RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "ShanghaiMoon-RelWithDebInfo")
 endif()
 
 ### macOS and Linux place binary in root directory
