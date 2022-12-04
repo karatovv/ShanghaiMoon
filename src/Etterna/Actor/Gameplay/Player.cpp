@@ -1174,8 +1174,7 @@ Player::UpdateHoldNotes(int iSongRow,
 					fLife = 1;
 				} else {
 					const auto window = m_bTickHolds ? TW_Checkpoint : TW_Hold;
-					fLife -= fDeltaTime / GetWindowSeconds(window);
-					fLife = max(0.F, fLife);
+					fLife = 0.f;
 				}
 				break;
 			case TapNoteSubType_Roll:
@@ -1320,10 +1319,40 @@ Player::UpdateHoldNotes(int iSongRow,
 
 	if ((hns == HNS_LetGo) && COMBO_BREAK_ON_IMMEDIATE_HOLD_LET_GO) {
 		IncrementMissCombo();
+		vTN[0].pTN->result.tns = TNS_W5;
+		auto& tn = *vTN[0].pTN;
+		SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
 	}
 
 	if (hns != HNS_None) {
 		auto& tn = *vTN[0].pTN;
+
+		if (hns == HNS_Held) // Shouldn't need that too, calculate offset instead
+		{
+			float offset = fabs(tn.result.fTapNoteOffset); // TODO: change tapnoteoffset to some math to calculate how far off it is from LN end
+
+			if (offset <= GetWindowSeconds(TW_W1)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W1;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W2)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W2;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W3)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W3;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W4)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W4;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W5)) {
+				IncrementMissCombo();
+				tn.result.tns = TNS_W5;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
+			}
+		}
 		SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
 		HandleHoldScore(tn);
 	}
@@ -3173,10 +3202,10 @@ Player::SetHoldJudgment(TapNote& tn, int iTrack, int iRow)
 			  m_pPlayerStageStats->m_iHoldNoteScores[tn.HoldResult.hns] + 1);
 
 			// Ms scoring implemenation - Mina
-			if (tn.HoldResult.hns == HNS_LetGo ||
+			/**if (tn.HoldResult.hns == HNS_LetGo ||
 				tn.HoldResult.hns == HNS_Missed) {
 				curwifescore += wife3_hold_drop_weight;
-			}
+			}**/
 
 			msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
 			msg.SetParam("CurWifeScore", curwifescore);
