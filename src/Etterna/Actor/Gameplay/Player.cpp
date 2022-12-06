@@ -1325,17 +1325,23 @@ Player::UpdateHoldNotes(int iSongRow,
 		SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
 	}**/
 	auto& tn = *vTN[0].pTN;
-	if (hns == HNS_LetGo)
+	if (hns == HNS_LetGo || hns == HNS_Held)
 		{
-			//float offset = fabs(tn.result.fTapNoteOffset);
 			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
 			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
 			fStepBeat = NoteRowToBeat(iMaxEndRow);
 			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
 			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
+			
 
 			tn.HoldResult.hns = HNS_Held;
-			//float offset = static_cast<float>(abs(tn.iDuration - (tn.HoldResult.iLastHeldRow - iStartRow))) / 1000;
+
+			if (fMaxEndSeconds - m_Timing->WhereUAtBro(iStartRow) <= 0.1 ) // dont judge release if LN is shorter than 100ms
+			{
+				SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
+				HandleHoldScore(tn);
+				return;
+			}
 
 			if (offset <= GetWindowSeconds(TW_W1)) {
 				IncrementCombo();
@@ -1353,7 +1359,7 @@ Player::UpdateHoldNotes(int iSongRow,
 				IncrementCombo();
 				tn.result.tns = TNS_W4;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else/** if (offset <= GetWindowSeconds(TW_W5))**/ {
+			} else {
 				IncrementMissCombo();
 				tn.result.tns = TNS_W5;
 				tn.HoldResult.hns = HNS_LetGo;
@@ -1362,42 +1368,6 @@ Player::UpdateHoldNotes(int iSongRow,
 		}
 
 	if (hns != HNS_None) {
-		
-
-		if (hns == HNS_Held)
-		{
-			//float offset = fabs(tn.result.fTapNoteOffset);
-			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
-			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
-			fStepBeat = NoteRowToBeat(iMaxEndRow);
-			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
-			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
-
-			//float offset = static_cast<float>(abs(tn.iDuration - (tn.HoldResult.iLastHeldRow - iStartRow))) / 1000;
-
-			if (offset <= GetWindowSeconds(TW_W1)) {
-				IncrementCombo();
-				tn.result.tns = TNS_W1;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W2)) {
-				IncrementCombo();
-				tn.result.tns = TNS_W2;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W3)) {
-				IncrementCombo();
-				tn.result.tns = TNS_W3;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W4)) {
-				IncrementCombo();
-				tn.result.tns = TNS_W4;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else/** if (offset <= GetWindowSeconds(TW_W5))**/ {
-				IncrementMissCombo();
-				tn.result.tns = TNS_W5;
-				tn.HoldResult.hns = HNS_LetGo;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
-			}
-		}
 		SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
 		HandleHoldScore(tn);
 	}
