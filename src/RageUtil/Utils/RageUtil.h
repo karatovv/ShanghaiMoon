@@ -154,26 +154,33 @@ wife3(float maxms, float ts) -> float
 }
 
 inline auto
-osuOD8(int tns) -> float
+osuOD8(const int TapNoteScores[]) -> float
 {
-	switch(tns)
+	int currentScore = 0;
+	for (int i = 5; i <= 9; i++)
 	{
-		case 4:
-		return 0.0f;
-		case 5:
-		return 50.0f;
-		case 6:
-		return 100.0f;
-		case 7:
-		return 200.0f;
-		case 8:
-		return 300.0f;
-		case 9:
-		return 300.0f;
-		default:
-		break;
+		switch(i)
+		{
+			case 5:
+			currentScore += TapNoteScores[i] * 50;
+			break;
+			case 6:
+			currentScore += TapNoteScores[i] * 100;
+			break;
+			case 7:
+			currentScore += TapNoteScores[i] * 200;
+			break;
+			case 8:
+			currentScore += TapNoteScores[i] * 300;
+			break;
+			case 9:
+			currentScore += TapNoteScores[i] * 300;
+			break;
+			default:
+			break;
+		}
 	}
-	return 0.0f;
+	return static_cast<float>(currentScore);
 }
 
 inline void

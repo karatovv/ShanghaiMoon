@@ -1336,7 +1336,7 @@ Player::UpdateHoldNotes(int iSongRow,
 
 			tn.HoldResult.hns = HNS_Held;
 
-			if (fMaxEndSeconds - m_Timing->WhereUAtBro(iStartRow) <= 0.1 ) // dont judge release if LN is shorter than 100ms
+			if (fMaxEndSeconds - m_Timing->WhereUAtBro(iStartRow) <= 0.1 ) // dont judge release if LN length is <= 100ms
 			{
 				SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
 				HandleHoldScore(tn);
@@ -3043,7 +3043,7 @@ Player::SetMineJudgment(TapNoteScore tns, int iTrack, int iRow)
 			if (m_pPlayerState->m_PlayerController == PC_HUMAN ||
 				m_pPlayerState->m_PlayerController == PC_REPLAY) {
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			} else {
@@ -3100,16 +3100,14 @@ Player::SetJudgment(int iRow,
 
 		if (m_pPlayerStageStats != nullptr) {
 			if (tns != TNS_Miss) {
-				curwifescore +=
-				  //wife3(tn.result.fTapNoteOffset, m_fTimingWindowScale);
-				  osuOD8(tns);
-			if (tn.HoldResult.hns == HNS_Held || tn.HoldResult.hns == HNS_LetGo)
-			{
-				m_pPlayerStageStats->m_iTapNoteScores[tns]++;
-			}
+				if (tn.HoldResult.hns == HNS_Held || tn.HoldResult.hns == HNS_LetGo)
+				{
+					m_pPlayerStageStats->m_iTapNoteScores[tns]++;
+				}
+				curwifescore = osuOD8(m_pPlayerStageStats->m_iTapNoteScores);
 			}
 			if (tns != TNS_HitMine && tns != TNS_AvoidMine && tns != TNS_CheckpointHit && tns != TNS_CheckpointMiss)
-				maxwifescore += 300;
+				maxwifescore += 300.f;
 
 			msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
 			msg.SetParam("CurWifeScore", curwifescore);
@@ -3134,13 +3132,13 @@ Player::SetJudgment(int iRow,
 			if (m_pPlayerState->m_PlayerController == PC_HUMAN ||
 				m_pPlayerState->m_PlayerController == PC_REPLAY) {
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore * 150;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			} else {
 				//curwifescore -= 666.F; // hail satan
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore * 150;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			}
@@ -3246,7 +3244,7 @@ Player::SetHoldJudgment(TapNote& tn, int iTrack, int iRow)
 			if (m_pPlayerState->m_PlayerController == PC_HUMAN ||
 				m_pPlayerState->m_PlayerController == PC_REPLAY) {
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			}
