@@ -1124,9 +1124,7 @@ Player::UpdateHoldNotes(int iSongRow,
 		// That interacts badly with !IMMEDIATE_HOLD_LET_GO,
 		// causing ALL holds to be judged HNS_Held whether they were or not.
 		if (!IMMEDIATE_HOLD_LET_GO ||
-			(iStartRow + trtn.pTN->iDuration) > iSongRow) { /** TODO: Convert window of TNS_W5 from seconds to iRow,
-																add to LN end iRow to extend the tracking of LN, allowing
-																the releases after iMaxEndRow to be judged. **/
+			(m_Timing->WhereUAtBro(iStartRow + trtn.pTN->iDuration)) + GetWindowSeconds(TW_W5) > m_Timing->WhereUAtBro(iSongRow)) {
 			const auto iTrack = trtn.iTrack;
 
 			if (m_pPlayerState->m_PlayerController != PC_HUMAN) {
@@ -1157,7 +1155,8 @@ Player::UpdateHoldNotes(int iSongRow,
 		for (auto& trtn : vTN) {
 			auto iEndRow = iStartRow + trtn.pTN->iDuration;
 
-			trtn.pTN->HoldResult.iLastHeldRow = min(iSongRow, iEndRow);
+			//trtn.pTN->HoldResult.iLastHeldRow = min(iSongRow, iEndRow);
+			trtn.pTN->HoldResult.iLastHeldRow = iSongRow;
 		}
 	}
 
@@ -1226,7 +1225,7 @@ Player::UpdateHoldNotes(int iSongRow,
 	}
 
 	// score hold notes that have passed
-	if (iSongRow >= iMaxEndRow && bHeadJudged) {
+	if (m_Timing->WhereUAtBro(iSongRow) >= m_Timing->WhereUAtBro(iMaxEndRow) + GetWindowSeconds(TW_W5) && bHeadJudged) {
 		auto bLetGoOfHoldNote = false;
 
 		/* Score rolls that end with fLife == 0 as LetGo, even if
@@ -1335,6 +1334,7 @@ Player::UpdateHoldNotes(int iSongRow,
 			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
 			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
 
+			tn.HoldResult.hns = HNS_Held;
 			//float offset = static_cast<float>(abs(tn.iDuration - (tn.HoldResult.iLastHeldRow - iStartRow))) / 1000;
 
 			if (offset <= GetWindowSeconds(TW_W1)) {
@@ -1356,6 +1356,7 @@ Player::UpdateHoldNotes(int iSongRow,
 			} else/** if (offset <= GetWindowSeconds(TW_W5))**/ {
 				IncrementMissCombo();
 				tn.result.tns = TNS_W5;
+				tn.HoldResult.hns = HNS_LetGo;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
 			}
 		}
@@ -1393,6 +1394,7 @@ Player::UpdateHoldNotes(int iSongRow,
 			} else/** if (offset <= GetWindowSeconds(TW_W5))**/ {
 				IncrementMissCombo();
 				tn.result.tns = TNS_W5;
+				tn.HoldResult.hns = HNS_LetGo;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
 			}
 		}
