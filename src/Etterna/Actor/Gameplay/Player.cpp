@@ -3133,6 +3133,10 @@ Player::SetJudgment(int iRow,
 				curwifescore +=
 				  //wife3(tn.result.fTapNoteOffset, m_fTimingWindowScale);
 				  osuOD8(tns);
+			if (tn.HoldResult.hns == HNS_Held || tn.HoldResult.hns == HNS_LetGo)
+			{
+				m_pPlayerStageStats->m_iTapNoteScores[tns]++;
+			}
 			}
 			if (tns != TNS_HitMine && tns != TNS_AvoidMine && tns != TNS_CheckpointHit && tns != TNS_CheckpointMiss)
 				maxwifescore += 300;
