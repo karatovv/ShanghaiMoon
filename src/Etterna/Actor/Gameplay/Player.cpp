@@ -481,9 +481,9 @@ Player::NeedsHoldJudging(const TapNote& tn) -> bool
 	switch (tn.type) {
 		DEFAULT_FAIL(tn.type);
 		case TapNoteType_HoldHead:
+		case TapNoteType_HoldTail:
 			return tn.HoldResult.hns == HNS_None;
 		case TapNoteType_Tap:
-		case TapNoteType_HoldTail:
 		case TapNoteType_Mine:
 		case TapNoteType_Lift:
 		case TapNoteType_AutoKeysound:
@@ -1124,7 +1124,9 @@ Player::UpdateHoldNotes(int iSongRow,
 		// That interacts badly with !IMMEDIATE_HOLD_LET_GO,
 		// causing ALL holds to be judged HNS_Held whether they were or not.
 		if (!IMMEDIATE_HOLD_LET_GO ||
-			(iStartRow + trtn.pTN->iDuration) > iSongRow) {
+			(iStartRow + trtn.pTN->iDuration) > iSongRow) { /** TODO: Convert window of TNS_W5 from seconds to iRow,
+																add to LN end iRow to extend the tracking of LN, allowing
+																the releases after iMaxEndRow to be judged. **/
 			const auto iTrack = trtn.iTrack;
 
 			if (m_pPlayerState->m_PlayerController != PC_HUMAN) {
@@ -1317,19 +1319,23 @@ Player::UpdateHoldNotes(int iSongRow,
 		}
 	}
 
-	if ((hns == HNS_LetGo) && COMBO_BREAK_ON_IMMEDIATE_HOLD_LET_GO) {
+	/**if ((hns == HNS_LetGo) && COMBO_BREAK_ON_IMMEDIATE_HOLD_LET_GO) {
 		IncrementMissCombo();
 		vTN[0].pTN->result.tns = TNS_W5;
 		auto& tn = *vTN[0].pTN;
 		SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-	}
-
-	if (hns != HNS_None) {
-		auto& tn = *vTN[0].pTN;
-
-		if (hns == HNS_Held) // Shouldn't need that too, calculate offset instead
+	}**/
+	auto& tn = *vTN[0].pTN;
+	if (hns == HNS_LetGo)
 		{
-			float offset = fabs(tn.result.fTapNoteOffset); // TODO: change tapnoteoffset to some math to calculate how far off it is from LN end
+			//float offset = fabs(tn.result.fTapNoteOffset);
+			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
+			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
+			fStepBeat = NoteRowToBeat(iMaxEndRow);
+			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
+			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
+
+			//float offset = static_cast<float>(abs(tn.iDuration - (tn.HoldResult.iLastHeldRow - iStartRow))) / 1000;
 
 			if (offset <= GetWindowSeconds(TW_W1)) {
 				IncrementCombo();
@@ -1347,7 +1353,44 @@ Player::UpdateHoldNotes(int iSongRow,
 				IncrementCombo();
 				tn.result.tns = TNS_W4;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W5)) {
+			} else/** if (offset <= GetWindowSeconds(TW_W5))**/ {
+				IncrementMissCombo();
+				tn.result.tns = TNS_W5;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
+			}
+		}
+
+	if (hns != HNS_None) {
+		
+
+		if (hns == HNS_Held)
+		{
+			//float offset = fabs(tn.result.fTapNoteOffset);
+			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
+			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
+			fStepBeat = NoteRowToBeat(iMaxEndRow);
+			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
+			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
+
+			//float offset = static_cast<float>(abs(tn.iDuration - (tn.HoldResult.iLastHeldRow - iStartRow))) / 1000;
+
+			if (offset <= GetWindowSeconds(TW_W1)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W1;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W2)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W2;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W3)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W3;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W4)) {
+				IncrementCombo();
+				tn.result.tns = TNS_W4;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else/** if (offset <= GetWindowSeconds(TW_W5))**/ {
 				IncrementMissCombo();
 				tn.result.tns = TNS_W5;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
