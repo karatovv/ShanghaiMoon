@@ -1,3 +1,4 @@
+#include "Core/Services/Locator.hpp"
 #include "Etterna/Globals/global.h"
 #include "Etterna/Actor/Base/ActorUtil.h"
 #include "Etterna/Models/Misc/AdjustSync.h"
@@ -3062,6 +3063,8 @@ Player::SetMineJudgment(TapNoteScore tns, int iTrack, int iRow)
 	}
 }
 
+int counterSetJudgment = 0;
+
 void
 Player::SetJudgment(int iRow,
 					int iTrack,
@@ -3104,10 +3107,17 @@ Player::SetJudgment(int iRow,
 				{
 					m_pPlayerStageStats->m_iTapNoteScores[tns]++;
 				}
-				curwifescore = osuOD8(m_pPlayerStageStats->m_iTapNoteScores);
+				if (!tns || tns == TNS_None || tns == TapNoteScore_Invalid)
+				curwifescore += osuOD8(tn.result.tns);
+				else
+				curwifescore += osuOD8(tns);
 			}
 			if (tns != TNS_HitMine && tns != TNS_AvoidMine && tns != TNS_CheckpointHit && tns != TNS_CheckpointMiss)
 				maxwifescore += 300.f;
+
+			counterSetJudgment++;
+			Locator::getLogger()->info("  SetJudgment called {} times, max/300 {}, cur {}, max {}, perc {}", 
+			counterSetJudgment, maxwifescore / 300, curwifescore, maxwifescore, curwifescore / maxwifescore);
 
 			msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
 			msg.SetParam("CurWifeScore", curwifescore);

@@ -3,6 +3,7 @@
 #ifndef RAGE_UTIL_H
 #define RAGE_UTIL_H
 
+#include <Core/Services/Locator.hpp>
 #include <map>
 #include <sstream>
 #include <cstring>
@@ -153,7 +154,7 @@ wife3(float maxms, float ts) -> float
 	return wife3_miss_weight;
 }
 
-inline auto
+/**inline auto
 osuOD8(const int TapNoteScores[]) -> float
 {
 	int currentScore = 0;
@@ -181,6 +182,30 @@ osuOD8(const int TapNoteScores[]) -> float
 		}
 	}
 	return static_cast<float>(currentScore);
+}**/
+
+inline auto
+osuOD8(int tns) -> float
+{
+	switch(tns)
+	{
+		case 4:
+		return 0.0f;
+		case 5:
+		return 50.0f;
+		case 6:
+		return 100.0f;
+		case 7:
+		return 200.0f;
+		case 8:
+		return 300.0f;
+		case 9:
+		return 300.0f;
+		default:
+		Locator::getLogger()->info("  received unusual tns with index {}", tns);
+		break;
+	}
+	return 0.0f;
 }
 
 inline void
