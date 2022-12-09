@@ -287,6 +287,12 @@ Player::~Player()
 	SAFE_DELETE(m_pIterUnjudgedMineRows);
 }
 
+#ifdef LOG_SCORE_DATA
+int counterSetJudgment = 0;
+int judgmentCounter[10];
+#endif
+
+
 /* Init() does the expensive stuff: load sounds and noteskins.  Load() just
  * loads a NoteData. */
 void
@@ -323,6 +329,12 @@ Player::Init(const std::string& sType,
 
 	m_iLastSeenCombo = 0;
 	m_bSeenComboYet = false;
+	#ifdef LOG_SCORE_DATA
+	counterSetJudgment = 0;
+
+	for (int i = 4; i < 10; i++)
+		judgmentCounter[i] = 0;
+	#endif
 
 	// set initial life
 	if ((m_pLifeMeter != nullptr) && (m_pPlayerStageStats != nullptr)) {
@@ -3063,8 +3075,6 @@ Player::SetMineJudgment(TapNoteScore tns, int iTrack, int iRow)
 	}
 }
 
-int counterSetJudgment = 0;
-
 void
 Player::SetJudgment(int iRow,
 					int iTrack,
@@ -3100,24 +3110,42 @@ Player::SetJudgment(int iRow,
 		// misses, multiply
 		// by 1000 for
 		// convenience - Mina
-
+		
 		if (m_pPlayerStageStats != nullptr) {
+			m_pPlayerStageStats->m_iTapNoteScores[tns]++;
+
 			if (tns != TNS_Miss) {
-				if (tn.HoldResult.hns == HNS_Held || tn.HoldResult.hns == HNS_LetGo)
-				{
-					m_pPlayerStageStats->m_iTapNoteScores[tns]++;
-				}
 				if (!tns || tns == TNS_None || tns == TapNoteScore_Invalid)
-				curwifescore += osuOD8(tn.result.tns);
+				{
+					curwifescore += osuOD8(tn.result.tns);
+					#ifdef LOG_SCORE_DATA
+					judgmentCounter[tn.result.tns]++;
+					#endif
+				}
 				else
-				curwifescore += osuOD8(tns);
+				{
+					curwifescore += osuOD8(tns);
+					#ifdef LOG_SCORE_DATA
+					judgmentCounter[tns]++;
+					#endif
+				}
 			}
+			#ifdef LOG_SCORE_DATA
+			else {
+				judgmentCounter[TNS_Miss]++;
+			}
+			#endif
+			
 			if (tns != TNS_HitMine && tns != TNS_AvoidMine && tns != TNS_CheckpointHit && tns != TNS_CheckpointMiss)
 				maxwifescore += 300.f;
 
+			#ifdef LOG_SCORE_DATA
 			counterSetJudgment++;
-			Locator::getLogger()->info("  SetJudgment called {} times, max/300 {}, cur {}, max {}, perc {}", 
-			counterSetJudgment, maxwifescore / 300, curwifescore, maxwifescore, curwifescore / maxwifescore);
+			Locator::getLogger()->info("  SetJudgment called {} times, max/300 {}, cur {}, max {}, perc {}, 320 {}, 300 {}, 200 {}, 100 {}, 50 {}, 0 {}", 
+			counterSetJudgment, maxwifescore / 300, curwifescore, maxwifescore, curwifescore / maxwifescore, 
+			judgmentCounter[9], judgmentCounter[8], judgmentCounter[7], judgmentCounter[6], judgmentCounter[5], judgmentCounter[4]);
+			#endif
+			
 
 			msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
 			msg.SetParam("CurWifeScore", curwifescore);
