@@ -471,7 +471,7 @@ ScoreKeeperNormal::HandleTapNoteScoreInternal(const NoteData& nd,
 	}
 
 	// update judged row totals. Respect Combo segments here.
-	auto& td = *GAMESTATE->m_pCurSteps->GetTimingData();
+	/**auto& td = *GAMESTATE->m_pCurSteps->GetTimingData();
 	auto cs = td.GetComboSegmentAtRow(row);
 	if (tns == TNS_CheckpointHit || tns >= m_MinScoreToContinueCombo) {
 		m_pPlayerStageStats->m_iTapNoteScores[tns] += cs->GetCombo();
@@ -479,7 +479,7 @@ ScoreKeeperNormal::HandleTapNoteScoreInternal(const NoteData& nd,
 		m_pPlayerStageStats->m_iTapNoteScores[tns] += cs->GetMissCombo();
 	} else {
 		m_pPlayerStageStats->m_iTapNoteScores[tns] += 1;
-	}
+	}**/
 }
 
 void
