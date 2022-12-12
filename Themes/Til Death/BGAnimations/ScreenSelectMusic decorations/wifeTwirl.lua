@@ -548,7 +548,13 @@ t[#t + 1] = Def.ActorFrame {
 			if song and score then
 				local wv = score:GetWifeVers()
 				local od = score:GetOsuOD()
-				self:settext("OD" .. od):diffuse(byGrade(score:GetWifeGrade()))
+				local hr = score:GetHardRock()
+				if hr == 0 then
+					self:settext("OD" .. od):diffuse(byGrade(score:GetWifeGrade()))
+				end
+				if hr == 1 then
+					self:settext("OD" .. od .. "+HR"):diffuse(byGrade(score:GetWifeGrade()))
+				end
 			else
 				self:settext("")
 			end

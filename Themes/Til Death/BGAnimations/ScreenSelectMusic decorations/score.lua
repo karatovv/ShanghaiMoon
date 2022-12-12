@@ -412,9 +412,15 @@ local l = Def.ActorFrame {
 				local wv = score:GetWifeVers()
 				local ws = "osu!mania OD"
 				local judge = score:GetOsuOD()
+				local hr = score:GetHardRock()
 				if not judge then judge = "??" end
 				local perc = score:GetWifeScore() * 100
-				self:settextf("%05.2f%% (%s)", notShit.floor(perc, 2), ws .. judge)
+				if hr == 0 then
+					self:settextf("%05.2f%% (%s)", notShit.floor(perc, 2), ws .. judge)
+				end
+				if hr == 1 then
+					self:settextf("%05.2f%% (%s %s)", notShit.floor(perc, 2), ws .. judge, "+HR")
+				end
 				self:diffuse(byGrade(score:GetWifeGrade()))
 			end
 		end
@@ -520,8 +526,14 @@ local l = Def.ActorFrame {
 		end,
 		DisplayCommand = function(self)
 			local j = score:GetOsuOD()
+			local hr = score:GetHardRock()
 			if not j then j = "??" end
-			self:settextf("%s%i", translated_info["Judge"], j)
+			if hr == 0 then
+				self:settextf("%s%i", translated_info["Judge"], j)
+			end
+			if hr == 1 then
+				self:settextf("%s%i %s", translated_info["Judge"], j, "+HR")
+			end
 		end
 	},
 	LoadFont("Common Normal") .. {

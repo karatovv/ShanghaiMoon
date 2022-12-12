@@ -572,12 +572,24 @@ local function scoreBoard(pn, position)
 					else
 					local perc = score:GetWifeScore() * 100
 					local od = "osu!mania OD" .. score:GetOsuOD()
-					--local perc = score:GetWifeScore() * 100
+					local hr = score:GetHardRock()
+					if hr == 0 then
 						self:settextf(
 							"%05.2f%% (%s)",
 							perc,
 							od
 						)
+					end
+					if hr == 1 then
+						self:settextf(
+							"%05.2f%% (%s %s)",
+							perc,
+							od,
+							"+HR"
+						)
+					end
+					--local perc = score:GetWifeScore() * 100
+						
 					end
 				end
 			}

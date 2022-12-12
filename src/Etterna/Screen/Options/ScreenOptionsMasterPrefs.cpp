@@ -447,6 +447,18 @@ TimingWindowScale(int& sel, bool ToSel, const ConfOption* pConfOption)
 	MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
 }
 
+static void
+HardRock(int& sel, bool ToSel, const ConfOption* pConfOption)
+{
+	// we are no longer supporting j1-3, they will be set to 1.f like j4
+	// to avoid issues with expected array sizes that i do not want to debug
+	auto& ts = GAMESTATE->timingscales;
+	float mapping[11]; // hardcodered because ide yell at me
+	for (size_t i = 0; i < ts.size(); ++i)
+		mapping[i] = ts[i];
+	MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+}
+
 /** @brief Life Difficulty scale */
 static void
 LifeDifficulty(int& sel, bool ToSel, const ConfOption* pConfOption)
@@ -463,6 +475,15 @@ LifeDifficulty(int& sel, bool ToSel, const ConfOption* pConfOption)
 
 #include "Etterna/Singletons/LuaManager.h"
 
+static bool
+GetHardRock()
+{
+	bool bHardRock = false;
+	bHardRock = PREFSMAN->m_bHardRock;
+	
+	return (bHardRock);
+}
+LuaFunction(GetHardRock, GetHardRock());
 static int
 GetTimingDifficulty()
 {
@@ -869,6 +890,7 @@ InitializeConfOptions()
 				   "|OD8",
 				   "|OD9",
 				   "|OD10"));
+	ADD(ConfOption("HardRock", MovePref<bool>, "Off", "On"));
 	ADD(ConfOption("LifeDifficulty",
 				   LifeDifficulty,
 				   "|1",
