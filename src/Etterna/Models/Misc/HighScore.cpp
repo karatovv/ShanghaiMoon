@@ -69,6 +69,7 @@ struct HighScoreImpl
 	float fSongOffset;
 	float fJudgeScale;
 	float fOsuOD;
+	bool bHardRock;
 	bool bNoChordCohesion;
 	bool bEtternaValid;
 	bool bUsedDS;
@@ -187,6 +188,7 @@ HighScoreImpl::HighScoreImpl()
 	fSongOffset = 0.F; // not for saving, only for replays
 	fJudgeScale = 0.F;
 	fOsuOD = 0.F;
+	bHardRock = false;
 	bEtternaValid = true;
 	vOffsetVector.clear();
 	vNoteRowVector.clear();
@@ -240,6 +242,7 @@ HighScoreImpl::CreateEttNode() const -> XNode*
 	pNode->AppendChild("SSRNormPercent", fSSRNormPercent);
 	pNode->AppendChild("JudgeScale", fJudgeScale);
 	pNode->AppendChild("OsuOD", fOsuOD);
+	pNode->AppendChild("HardRock", bHardRock);
 	pNode->AppendChild("NoChordCohesion", bNoChordCohesion);
 	pNode->AppendChild("EtternaValid", bEtternaValid);
 	if (bUsedDS) {
@@ -316,6 +319,7 @@ HighScoreImpl::LoadFromEttNode(const XNode* pNode)
 	pNode->GetChildValue("Rate", fMusicRate);
 	pNode->GetChildValue("JudgeScale", fJudgeScale);
 	pNode->GetChildValue("OsuOD", fOsuOD);
+	pNode->GetChildValue("HardRock", bHardRock);
 	pNode->GetChildValue("NoChordCohesion", bNoChordCohesion);
 	pNode->GetChildValue("EtternaValid", bEtternaValid);
 	auto dsSuccess = pNode->GetChildValue("DSFlag", bUsedDS);
@@ -1127,6 +1131,11 @@ HighScore::GetOsuOD() const -> float
 	return m_Impl->fOsuOD;
 }
 auto
+HighScore::GetHardRock() const -> bool
+{
+	return m_Impl->bHardRock;
+}
+auto
 HighScore::GetChordCohesion() const -> bool
 {
 	return !m_Impl->bNoChordCohesion;
@@ -1382,6 +1391,11 @@ void
 HighScore::SetJudgeScale(float f)
 {
 	m_Impl->fJudgeScale = f;
+}
+void
+HighScore::SetHardRock(bool b)
+{
+	m_Impl->bHardRock = b;
 }
 void
 HighScore::SetOsuOD(float f)
@@ -2026,6 +2040,11 @@ class LunaHighScore : public Luna<HighScore>
 		lua_pushnumber(L, p->GetOsuOD());
 		return 1;
 	}
+	static auto GetHardRock(T* p, lua_State* L) -> int
+	{
+		lua_pushnumber(L, p->GetHardRock());
+		return 1;
+	}
 	static auto GetDate(T* p, lua_State* L) -> int
 	{
 		lua_pushstring(L, p->GetDateTime().GetString().c_str());
@@ -2298,6 +2317,7 @@ class LunaHighScore : public Luna<HighScore>
 		ADD_METHOD(GetMusicRate);
 		ADD_METHOD(GetJudgeScale);
 		ADD_METHOD(GetOsuOD);
+		ADD_METHOD(GetHardRock);
 		ADD_METHOD(GetChordCohesion);
 		ADD_METHOD(GetDate);
 		ADD_METHOD(GetPlayedSeconds);

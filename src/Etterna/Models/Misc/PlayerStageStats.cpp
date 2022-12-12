@@ -59,6 +59,7 @@ PlayerStageStats::InternalInit()
 	MaxWifeScore = 0.f;
 	m_fTimingScale = 0.f;
 	m_fOsuOD = 0.f;
+	m_bHardRock = false;
 	m_vOffsetVector.clear();
 	m_vNoteRowVector.clear();
 	m_vTrackVector.clear();
@@ -372,6 +373,11 @@ float
 PlayerStageStats::GetOsuOD() const
 {
 	return m_fOsuOD;
+}
+bool
+PlayerStageStats::GetHardRock() const
+{
+	return m_bHardRock;
 }
 std::vector<InputDataEvent>
 PlayerStageStats::GetInputDataVector() const

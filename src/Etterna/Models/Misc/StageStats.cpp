@@ -517,6 +517,7 @@ FillInHighScore(const PlayerStageStats& pss,
 	hs.SetMusicRate(GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate);
 	hs.SetJudgeScale(pss.GetTimingScale());
 	hs.SetOsuOD(pss.GetOsuOD());
+	hs.SetHardRock(pss.GetHardRock());
 	hs.SetChordCohesion(GAMESTATE->CountNotesSeparately());
 	hs.SetMaxCombo(pss.GetMaxCombo().m_cnt);
 	hs.SetPlayedSeconds(pss.m_fPlayedSeconds);

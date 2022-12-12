@@ -211,6 +211,9 @@ Player::GetWindowSeconds(TimingWindow tw) -> float
 	{
 		fSecs -= m_fOsuOD * 3 / 1000;
 	}
+
+	if (PREFSMAN->m_bHardRock)
+		fSecs /= 1.4f;
 	return fSecs;
 }
 
@@ -590,6 +593,7 @@ Player::Load()
 	if (m_pPlayerStageStats != nullptr) {
 		m_pPlayerStageStats->m_fTimingScale = m_fTimingWindowScale;
 		m_pPlayerStageStats->m_fOsuOD = m_fOsuOD;
+		m_pPlayerStageStats->m_bHardRock = PREFSMAN->m_bHardRock;
 	}
 
 	/* Apply transforms. */
@@ -1137,7 +1141,7 @@ Player::UpdateHoldNotes(int iSongRow,
 		// That interacts badly with !IMMEDIATE_HOLD_LET_GO,
 		// causing ALL holds to be judged HNS_Held whether they were or not.
 		if (!IMMEDIATE_HOLD_LET_GO ||
-			(m_Timing->WhereUAtBro(iStartRow + trtn.pTN->iDuration)) + GetWindowSeconds(TW_W5) > m_Timing->WhereUAtBro(iSongRow)) {
+			(m_Timing->WhereUAtBro(iStartRow + trtn.pTN->iDuration)) + GetWindowSeconds(TW_W5) * 1.5f > m_Timing->WhereUAtBro(iSongRow)) {
 			const auto iTrack = trtn.iTrack;
 
 			if (m_pPlayerState->m_PlayerController != PC_HUMAN) {
@@ -1238,7 +1242,7 @@ Player::UpdateHoldNotes(int iSongRow,
 	}
 
 	// score hold notes that have passed
-	if (m_Timing->WhereUAtBro(iSongRow) >= m_Timing->WhereUAtBro(iMaxEndRow) + GetWindowSeconds(TW_W5) && bHeadJudged) {
+	if (m_Timing->WhereUAtBro(iSongRow) >= m_Timing->WhereUAtBro(iMaxEndRow) + GetWindowSeconds(TW_W5) * 1.5f && bHeadJudged) {
 		auto bLetGoOfHoldNote = false;
 
 		/* Score rolls that end with fLife == 0 as LetGo, even if

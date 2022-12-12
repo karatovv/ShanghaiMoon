@@ -84,7 +84,13 @@ local t = Def.ActorFrame {
 			self:xy(PlayerFrameX + 53, PlayerFrameY - 4):halign(0):zoom(0.45)
 		end,
 		BeginCommand = function(self)
-			self:settextf("%s: %d", translated_info["Judge"], GetTimingDifficulty())
+			local hr = GetHardRock()
+			if hr == false then
+				self:settextf("%s%d", translated_info["Judge"], GetTimingDifficulty())
+			end
+			if hr == true then
+				self:settextf("%s%d%s", translated_info["Judge"], GetTimingDifficulty(), "+HR")
+			end
 		end
 	},
 	LoadFont("Common Normal") .. {

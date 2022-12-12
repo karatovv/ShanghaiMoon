@@ -46,6 +46,7 @@ class PlayerStageStats
 	[[nodiscard]] auto GetMaxWifeScore() const -> float;
 	[[nodiscard]] auto GetTimingScale() const -> float;
 	[[nodiscard]] auto GetOsuOD() const -> float;
+	[[nodiscard]] auto GetHardRock() const -> bool;
 	[[nodiscard]] auto GetInputDataVector() const -> std::vector<InputDataEvent>;
 	[[nodiscard]] auto GetOffsetVector() const -> std::vector<float>;
 	[[nodiscard]] auto GetNoteRowVector() const -> std::vector<int>;
@@ -90,6 +91,7 @@ class PlayerStageStats
 	float MaxWifeScore{};
 	float m_fTimingScale{};
 	float m_fOsuOD{};
+	bool m_bHardRock{};
 	std::vector<MineReplayResult> m_vMineReplayData;
 	std::vector<HoldReplayResult> m_vHoldReplayData;
 	std::vector<float> m_vOffsetVector;

@@ -240,7 +240,11 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 				if hsTable[index] == nil then return end
 				local wv = hsTable[index]:GetWifeVers()
 				local od = hsTable[index]:GetOsuOD()
+				local hr = hsTable[index]:GetHardRock()
 				local wstring = "OD" .. od
+				if hr == 1 then
+					wstring = "OD" .. od .. "+HR"
+				end
 				if usingSSRSort then
 					wstring = "OD8"
 				end
