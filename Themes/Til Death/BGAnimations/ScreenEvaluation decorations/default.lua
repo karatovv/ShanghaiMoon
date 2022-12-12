@@ -461,14 +461,14 @@ local function scoreBoard(pn, position)
 				local gtmNumber = self:GetParent():GetChild("OsuGTMNumber")
 
 				if isOver(self) and show then
-					background:visible(true)
-					text:visible(true)
-					paText:visible(true)
-					paNumber:visible(true)
-					gtmText:visible(true)
-					gtmNumber:visible(true)
-					maText:visible(true)
-					maNumber:visible(true)
+					background:visible(false)
+					text:visible(false)
+					paText:visible(false)
+					paNumber:visible(false)
+					maText:visible(false)
+					maNumber:visible(false)
+					gtmText:visible(false)
+					gtmNumber:visible(false)
 
 					local x = INPUTFILTER:GetMouseX() - self:GetParent():GetX()
 

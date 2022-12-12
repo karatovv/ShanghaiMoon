@@ -90,16 +90,16 @@ GetGradeFromPercent(float pc)
 	if (pc >= 0.99F) {
 		return Grade_Tier02;
 	}
-	if (pc >= 0.96F) {
+	if (pc >= 0.95F) {
 		return Grade_Tier03;
 	}
-	if (pc >= 0.93F) {
+	if (pc >= 0.90F) {
 		return Grade_Tier04;
 	}
-	if (pc >= 0.88F) {
+	if (pc >= 0.80F) {
 		return Grade_Tier05;
 	}
-	if (pc >= 0.80F) {
+	if (pc >= 0.70F) {
 		return Grade_Tier06;
 	}
 

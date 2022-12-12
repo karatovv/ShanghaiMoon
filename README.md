@@ -1,9 +1,7 @@
-osu scoring system and gameplay in etterna (only supports judge4 for now)
-
-judge 4 = od8
+osu scoring system and gameplay in etterna
 
 do not use your old save file!
 
-score autoupload disabled
+you are unable to submit scores to etternaonline with this client
 
-thx matveiqaa for osu scoring and linux fixes 
+thx matveiqaa for osu stuff and linux fixes 

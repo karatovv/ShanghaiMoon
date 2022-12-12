@@ -879,18 +879,19 @@ InitializeConfOptions()
 	// Machine options
 	ADD(ConfOption("OsuOD",
 				   TimingWindowScale,
-				   "|OD0",
-				   "|OD1",
-				   "|OD2",
-				   "|OD3",
-				   "|OD4",
-				   "|OD5",
-				   "|OD6",
-				   "|OD7",
-				   "|OD8",
-				   "|OD9",
-				   "|OD10"));
+				   "|0",
+				   "|1",
+				   "|2",
+				   "|3",
+				   "|4",
+				   "|5",
+				   "|6",
+				   "|7",
+				   "|8",
+				   "|9",
+				   "|10"));
 	ADD(ConfOption("HardRock", MovePref<bool>, "Off", "On"));
+
 	ADD(ConfOption("LifeDifficulty",
 				   LifeDifficulty,
 				   "|1",

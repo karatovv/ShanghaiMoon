@@ -152,7 +152,7 @@ PrefsManager::PrefsManager()
   , m_HighResolutionTextures("HighResolutionTextures",
 							 HighResolutionTextures_Auto)
   , m_sLanguage("Language", "")
-  , m_fLifeDifficultyScale("LifeDifficultyScale", 1.0f)
+  , m_fLifeDifficultyScale("LifeDifficultyScale", 1.5f)
   , m_bHardRock("HardRock", false)
   , LiftsOnOsuHolds("LiftsOnOsuHolds", false)
   , m_bLogToDisk("LogToDisk", true)
