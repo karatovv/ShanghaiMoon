@@ -1,5 +1,7 @@
 local t = Def.ActorFrame {}
 
+t[#t + 1] = LoadActor(THEME:GetPathB('', '_shared background/snow.lua'))
+
 local scoreType = themeConfig:get_data().global.DefaultScoreType
 
 if GAMESTATE:GetNumPlayersEnabled() == 1 and themeConfig:get_data().eval.ScoreBoardEnabled then
@@ -538,11 +540,11 @@ local function scoreBoard(pn, position)
 				BeginCommand = function(self)
 					self:queuecommand("Set")
 					SCREENMAN:GetTopScreen():AddInputCallback(function(event)
-						
+
 						if(isOver(self) and event.type == "InputEventType_Release") then
 
 							if event.DeviceInput.button == "DeviceButton_left mouse button" and show then
-							
+
 							window = window + 1
 
 							if window > #timingWindowConfig:get_data().customWindows then
@@ -589,7 +591,7 @@ local function scoreBoard(pn, position)
 						)
 					end
 					--local perc = score:GetWifeScore() * 100
-						
+
 					end
 				end
 			}
