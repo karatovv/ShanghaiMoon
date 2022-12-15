@@ -758,6 +758,7 @@ t[#t + 1] =LoadFont("Common Normal") .. {
 	end
 }
 
+local show = false
 -- cdtitle
 t[#t + 1] = Def.Sprite {
 	InitCommand = function(self)
@@ -765,6 +766,26 @@ t[#t + 1] = Def.Sprite {
 	end,
 	CurrentStyleChangedMessageCommand = function(self)
 		self:playcommand("MortyFarts")
+	end,
+	BeginCommand = function(self)
+		SCREENMAN:GetTopScreen():AddInputCallback(function(event)
+
+			if(isOver(self) and event.type == "InputEventType_Release") then
+				if event.DeviceInput.button == "DeviceButton_left mouse button" then
+					show = not show
+			  end
+			if show == true then
+				local auth = song:GetOrTryAtLeastToGetSimfileAuthor()
+				TOOLTIP:SetText(auth)
+				TOOLTIP:Show()
+		  end
+			if show == false then
+				TOOLTIP:Hide()
+		  end
+
+			end
+
+		end)
 	end,
 	MortyFartsCommand = function(self)
 		self:finishtweening()
@@ -892,7 +913,7 @@ local function toggleButton(textEnabled, textDisabled, msg, x, extrawidth, y, en
 					else
 						ison = (not ison)
 					end
-					
+
 					-- wtf 2
 					self:diffuse(ison and color(enabledC) or getMainColor("highlight"))
 					NSMAN:SendChatMsg(msg, 1, NSMAN:GetCurrentRoomName())
