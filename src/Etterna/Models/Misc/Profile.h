@@ -236,10 +236,16 @@ class Profile
 	{
 		PermaMirrorCharts.emplace(ck);
 	}
+	void AddToPermaNoPitch(const std::string& ck)
+	{
+		PermaNoPitchesCharts.emplace(ck);
+	}
 	void RemoveFromFavorites(const std::string& ck);
 	void RemoveFromPermaMirror(const std::string& ck);
+	void RemoveFromPermaNoPitches(const std::string& ck);
 	std::set<std::string> FavoritedCharts;
 	std::set<std::string> PermaMirrorCharts;
+	std::set<std::string> PermaNoPitchesCharts;
 
 	// more future goalman stuff -mina
 	bool AddGoal(const std::string& ck);

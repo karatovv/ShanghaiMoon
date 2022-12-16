@@ -170,6 +170,11 @@ local t = Def.ActorFrame {
 			local playeroptions = GAMESTATE:GetPlayerState():GetPlayerOptions(modslevel)
 			playeroptions:Mirror(false)
 		end
+		if playerConfig:get_data(pn_to_profile_slot(PLAYER_1)).OneShotMirror or profile:IsCurrentChartPermaNoPitch() then
+			local modslevel = topscreen == "ScreenEditOptions" and "ModsLevel_Stage" or "ModsLevel_Preferred"
+			local playeroptions = GAMESTATE:GetPlayerState():GetPlayerOptions(modslevel)
+			PREFSMAN:SetPreference("EnablePitchRates", true)
+		end
 		-- if not on General and we started the noteField and we changed tabs then changed songs
 		-- this means the music should be set again as long as the preview is still "on" but off screen
 		if getTabIndex() ~= 0 and noteField and heyiwasusingthat then

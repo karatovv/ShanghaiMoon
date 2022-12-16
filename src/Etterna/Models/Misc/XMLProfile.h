@@ -27,6 +27,7 @@ class XMLProfile
 	void LoadEttScoresFromNode(const XNode* pNode);
 	void LoadFavoritesFromNode(const XNode* pNode);
 	void LoadPermaMirrorFromNode(const XNode* pNode);
+	void LoadPermaNoPitchFromNode(const XNode* pNode);
 	void LoadScoreGoalsFromNode(const XNode* pNode);
 	void LoadPlaylistsFromNode(const XNode* pNode);
 
@@ -38,6 +39,7 @@ class XMLProfile
 
 	auto SaveFavoritesCreateNode(const Profile* profile) const -> XNode*;
 	auto SavePermaMirrorCreateNode(const Profile* profile) const -> XNode*;
+	auto SavePermaNoPitchCreateNode(const Profile* profile) const -> XNode*;
 	auto SaveScoreGoalsCreateNode(const Profile* profile) const -> XNode*;
 	auto SavePlaylistsCreateNode(const Profile* profile) const -> XNode*;
 	auto SaveScreenshotDataCreateNode(const Profile* profile) const -> XNode*;

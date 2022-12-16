@@ -48,6 +48,7 @@ class SongManager
 	auto IsGroupNeverCached(const std::string& group) const -> bool;
 	void SetFavoritedStatus(std::set<std::string>& favs);
 	void SetPermaMirroredStatus(std::set<std::string>& pmir);
+	void SetPermaNoPitchedStatus(std::set<std::string>& nopitch);
 	void SetHasGoal(std::unordered_map<std::string, GoalsForChart>& goalmap);
 
 	auto GetSongGroupBannerPath(const std::string& sSongGroup) const

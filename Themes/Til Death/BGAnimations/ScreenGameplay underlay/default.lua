@@ -7,6 +7,9 @@ local replaystate = GAMESTATE:GetPlayerState():GetPlayerController() == "PlayerC
 if profile:IsCurrentChartPermamirror() and not replaystate then -- turn on mirror if song is flagged as perma mirror
 	playeroptions:Mirror(true)
 end
+if profile:IsCurrentChartPermaNoPitch() and not replaystate then
+	PREFSMAN:SetPreference("EnablePitchRates", false)
+end
 
 local bgtype = playerConfig:get_data(pn_to_profile_slot(PLAYER_1)).BackgroundType
 local songoptions = GAMESTATE:GetSongOptionsObject("ModsLevel_Preferred")

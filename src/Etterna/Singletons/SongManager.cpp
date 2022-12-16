@@ -989,6 +989,18 @@ SongManager::SetPermaMirroredStatus(std::set<string>& pmir)
 	}
 }
 
+void
+SongManager::SetPermaNoPitchedStatus(std::set<string>& nopitch)
+{
+	for (auto song : m_pSongs) {
+		for (auto steps : song->GetAllSteps()) {
+			if (nopitch.count(steps->GetChartKey()) != 0u) {
+				song->SetPermaNoPitch(true);
+			}
+		}
+	}
+}
+
 // hurr should probably redo both (all three) of these -mina
 void
 SongManager::SetHasGoal(std::unordered_map<string, GoalsForChart>& goalmap)

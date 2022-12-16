@@ -482,6 +482,10 @@ ScreenSelectMusic::Input(const InputEventPlus& input)
 				   input.type == IET_FIRST_PRESS) {
 			if (ToggleCurrentPermamirror())
 				return true;
+		} else if (bHoldingCtrl && c == 'N' && m_MusicWheel.IsSettled() &&
+				   input.type == IET_FIRST_PRESS) {
+			if (ToggleCurrentPermaNoPitch())
+				return true;
 		} else if (bHoldingCtrl && c == 'G' && m_MusicWheel.IsSettled() &&
 				   input.type == IET_FIRST_PRESS &&
 				   GAMESTATE->m_pCurSteps != nullptr) {
@@ -1620,6 +1624,32 @@ ScreenSelectMusic::ToggleCurrentPermamirror()
 }
 
 bool
+ScreenSelectMusic::ToggleCurrentPermaNoPitch()
+{
+	auto alwaysnopitch = GAMESTATE->m_pCurSong;
+	if (alwaysnopitch != nullptr) {
+		auto* pProfile = PROFILEMAN->GetProfile(PLAYER_1);
+
+		if (!alwaysnopitch->IsPermaNoPitch()) {
+			alwaysnopitch->SetPermaNoPitch(true);
+			pProfile->AddToPermaNoPitch(GAMESTATE->m_pCurSteps->GetChartKey());
+		} else {
+			alwaysnopitch->SetPermaNoPitch(false);
+			pProfile->RemoveFromPermaNoPitches(
+			  GAMESTATE->m_pCurSteps->GetChartKey());
+		}
+
+		// legacy compat TEMP
+		MESSAGEMAN->Broadcast("FavoritesUpdated");
+
+		MESSAGEMAN->Broadcast("PermaNoPitchUpdated");
+		m_MusicWheel.RebuildWheelItems(0);
+		return true;
+	}
+	return false;
+}
+
+bool
 ScreenSelectMusic::GoalFromCurrentChart()
 {
 	auto* pProfile = PROFILEMAN->GetProfile(PLAYER_1);
@@ -2006,6 +2036,11 @@ class LunaScreenSelectMusic : public Luna<ScreenSelectMusic>
 		lua_pushboolean(L, p->ToggleCurrentPermamirror());
 		return 1;
 	}
+	static int ToggleCurrentPermaNoPitch(T* p, lua_State* L)
+	{
+		lua_pushboolean(L, p->ToggleCurrentPermaNoPitch());
+		return 1;
+	}
 	static int GoalFromCurrentChart(T* p, lua_State* L)
 	{
 		lua_pushboolean(L, p->GoalFromCurrentChart());
@@ -2038,6 +2073,7 @@ class LunaScreenSelectMusic : public Luna<ScreenSelectMusic>
 		ADD_METHOD(ReloadCurrentPack);
 		ADD_METHOD(ToggleCurrentFavorite);
 		ADD_METHOD(ToggleCurrentPermamirror);
+		ADD_METHOD(ToggleCurrentPermaNoPitch);
 		ADD_METHOD(GoalFromCurrentChart);
 		ADD_METHOD(AddCurrentChartToActivePlaylist);
 	}
