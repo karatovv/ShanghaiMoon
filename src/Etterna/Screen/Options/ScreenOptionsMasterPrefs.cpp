@@ -892,6 +892,8 @@ InitializeConfOptions()
 				   "|10"));
 	ADD(ConfOption("HardRock", MovePref<bool>, "Off", "On"));
 
+	ADD(ConfOption("CustomBG", MovePref<bool>, "Off", "On"));
+
 	ADD(ConfOption("LifeDifficulty",
 				   LifeDifficulty,
 				   "|1",

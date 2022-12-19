@@ -170,7 +170,7 @@ local t = Def.ActorFrame {
 			local playeroptions = GAMESTATE:GetPlayerState():GetPlayerOptions(modslevel)
 			playeroptions:Mirror(false)
 		end
-		if playerConfig:get_data(pn_to_profile_slot(PLAYER_1)).OneShotMirror or profile:IsCurrentChartPermaNoPitch() then
+		if profile:IsCurrentChartPermaNoPitch() then
 			local modslevel = topscreen == "ScreenEditOptions" and "ModsLevel_Stage" or "ModsLevel_Preferred"
 			local playeroptions = GAMESTATE:GetPlayerState():GetPlayerOptions(modslevel)
 			PREFSMAN:SetPreference("EnablePitchRates", true)

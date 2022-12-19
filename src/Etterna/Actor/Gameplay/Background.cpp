@@ -311,7 +311,10 @@ BackgroundImpl::Layer::CreateBackground(const Song* pSong,
 		std::vector<std::string> vsPaths, vsThrowAway;
 
 		// Look for BGAnims in the song dir
-		if (sToResolve == SONG_BACKGROUND_FILE)
+		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG)
+			vsPaths.push_back(
+			 THEME->GetPathG("", "image"));
+		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG == false)
 			vsPaths.push_back(
 			  pSong->HasBackground()
 				? pSong->GetBackgroundPath()

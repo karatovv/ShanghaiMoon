@@ -7,7 +7,7 @@ local replaystate = GAMESTATE:GetPlayerState():GetPlayerController() == "PlayerC
 if profile:IsCurrentChartPermamirror() and not replaystate then -- turn on mirror if song is flagged as perma mirror
 	playeroptions:Mirror(true)
 end
-if profile:IsCurrentChartPermaNoPitch() and not replaystate then
+if profile:IsCurrentChartPermaNoPitch() then
 	PREFSMAN:SetPreference("EnablePitchRates", false)
 end
 
