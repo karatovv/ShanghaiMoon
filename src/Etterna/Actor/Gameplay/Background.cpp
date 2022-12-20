@@ -326,9 +326,13 @@ BackgroundImpl::Layer::CreateBackground(const Song* pSong,
 			for (const auto& entry : fs::directory_iterator(path))
 				custombgs.push_back(entry.path().filename().string());
 			int size = custombgs.size();
-			std::string chosenbg = custombgs.at(rand() % size + 0);
-			vsPaths.push_back(
-			 THEME->GetPathCB("", chosenbg));
+			if (size != 0) {
+				std::string chosenbg = custombgs.at(rand() % size + 0);
+				vsPaths.push_back(THEME->GetPathCB("", chosenbg));
+			}
+			if (size == 0) {
+				vsPaths.push_back(THEME->GetPathG("Common", "fallback background"));
+			}
 		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG == false)
 			vsPaths.push_back(
 			  pSong->HasBackground()
