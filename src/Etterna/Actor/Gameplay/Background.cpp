@@ -313,7 +313,7 @@ BackgroundImpl::Layer::CreateBackground(const Song* pSong,
 		// Look for BGAnims in the song dir
 		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG)
 			vsPaths.push_back(
-			 THEME->GetPathG("", "image"));
+			 THEME->GetPathCB("", "image"));
 		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG == false)
 			vsPaths.push_back(
 			  pSong->HasBackground()

@@ -15,6 +15,7 @@ enum ElementCategory
 	EC_BGANIMATIONS,
 	EC_FONTS,
 	EC_GRAPHICS,
+	EC_CUSTOMBG,
 	EC_SOUNDS,
 	EC_OTHER,
 	NUM_ElementCategory,
@@ -112,6 +113,12 @@ class ThemeManager
 				  bool bOptional = false) -> std::string
 	{
 		return GetPath(EC_GRAPHICS, sMetricsGroup, sElement, bOptional);
+	};
+	auto GetPathCB(const std::string& sMetricsGroup,
+				   const std::string& sElement,
+				   bool bOptional = false) -> std::string
+	{
+		return GetPath(EC_CUSTOMBG, sMetricsGroup, sElement, bOptional);
 	};
 	auto GetPathS(const std::string& sMetricsGroup,
 				  const std::string& sElement,
