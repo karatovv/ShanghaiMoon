@@ -58,9 +58,6 @@ static Preference<RandomBackgroundMode> g_RandomBackgroundMode(
 static Preference<int> g_iNumBackgrounds("NumBackgrounds", 10);
 static Preference<bool> g_bSongBackgrounds("SongBackgrounds", true);
 
-// Width of the region separating the left and right brightness areas:
-static float g_fBackgroundCenterWidth = 40;
-
 class BrightnessOverlay : public ActorFrame
 {
   public:
@@ -562,7 +559,8 @@ BackgroundImpl::LoadFromSong(const Song* pSong)
 
 	// do not load any background if it will never change and is 0 brightness
 	// this allows something like lua to load or modify in the background layer
-	if (PREFSMAN->m_fBGBrightness == 0.f && !m_pSong->HasBGChanges())
+	if ((PREFSMAN->m_fBGBrightness == 0.f || !PREFSMAN->m_bShowBackgrounds) &&
+		!m_pSong->HasBGChanges())
 		return;
 
 	// Choose a bunch of backgrounds that we'll use for the random file marker

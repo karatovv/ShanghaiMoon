@@ -192,6 +192,38 @@ function PracticeMode()
 	return t
 end
 
+function JudgeDifficulty()
+	local t = {
+		Name = "TimingWindowScale",
+		LayoutType = "ShowAllInRow",
+		SelectType = "SelectOne",
+		OneChoiceForAllPlayers = false,
+		ExportOnChange = true,
+		Choices = {"4", "5", "6", "7", "8", THEME:GetString("OptionNames", "Justice")},
+		LoadSelections = function(self, list, pn)
+			local td = math.max(GetTimingDifficulty() - 3, 1)
+			-- value is a judge number rather than a timing scale
+			list[td] = true
+		end,
+		SaveSelections = function(self, list, pn)
+			local val = 1.0
+			local found = false
+			for i = 1, #list do
+				if not found then
+					if list[i] == true then
+						value = notShit.round(GAMESTATE:GetTimingScales()[i+3], 2)
+						found = true
+					end
+				end
+			end
+			-- value is a timing scale rather than a judge number
+			SetTimingDifficulty(value)
+		end
+	}
+	setmetatable(t, t)
+	return t
+end
+
 function RateList()
     local ratelist = {}
     do
@@ -237,6 +269,159 @@ function RateList()
         end,
 		NotifyOfSelection = function(self, pn, choice)
 			MESSAGEMAN:Broadcast("RateListOptionChanged", {rate = getCurRateValue()})
+		end
+    }
+    setmetatable(t, t)
+    return t
+end
+
+function InputDebounceTime()
+    local delaylist = {}
+    do
+		-- in milliseconds, 100 is pretty egregious
+        local start = -0.100
+        local upper = 0.100
+        local increment = 0.001
+        while start <= upper do
+			-- these rounds should force it to be milliseconds only
+            delaylist[#delaylist+1] = tostring(notShit.round(start * 1000)) .. "ms"
+            start = notShit.round(start + increment, 3)
+        end
+    end
+
+    local t = {
+        Name = "InputDebounceTime",
+        LayoutType = "ShowAllInRow",
+        SelectType = "SelectOne",
+        OneChoiceForAllPlayers = false,
+        ExportOnChange = true,
+        Choices = delaylist,
+        LoadSelections = function(self, list, pn)
+            local rateindex = 1
+            local rate = notShit.round(PREFSMAN:GetPreference("InputDebounceTime"), 4)
+            local acceptable_delta = 0.0005
+            for i = 1, #delaylist do
+                local r = tonumber(delaylist[i]:sub(1, -3)) / 1000
+                if r == rate or (rate - acceptable_delta <= r and rate + acceptable_delta >= r) then
+                    rateindex = i
+                    break
+                end
+            end
+            list[rateindex] = true
+        end,
+        SaveSelections = function(self, list, pn)
+            for i, v in ipairs(list) do
+                if v == true then
+                    local r = notShit.round(tonumber(delaylist[i]:sub(1, -3)) / 1000, 3)
+					PREFSMAN:SetPreference("InputDebounceTime", r)
+                    break
+                end
+            end
+        end,
+		NotifyOfSelection = function(self, pn, choice)
+			MESSAGEMAN:Broadcast("InputDebounceOptionChanged", {value = PREFSMAN:GetPreference("InputDebounceTime")})
+		end
+    }
+    setmetatable(t, t)
+    return t
+end
+
+function VisualDelaySeconds()
+    local delaylist = {}
+    do
+		-- in milliseconds, 100 is pretty egregious
+        local start = -0.100
+        local upper = 0.100
+        local increment = 0.001
+        while start <= upper do
+			-- these rounds should force it to be milliseconds only
+            delaylist[#delaylist+1] = tostring(notShit.round(start * 1000)) .. "ms"
+            start = notShit.round(start + increment, 3)
+        end
+    end
+
+    local t = {
+        Name = "VisualDelaySeconds",
+        LayoutType = "ShowAllInRow",
+        SelectType = "SelectOne",
+        OneChoiceForAllPlayers = false,
+        ExportOnChange = true,
+        Choices = delaylist,
+        LoadSelections = function(self, list, pn)
+            local rateindex = 1
+            local rate = notShit.round(PREFSMAN:GetPreference("VisualDelaySeconds"), 4)
+            local acceptable_delta = 0.0005
+            for i = 1, #delaylist do
+                local r = tonumber(delaylist[i]:sub(1, -3)) / 1000
+                if r == rate or (rate - acceptable_delta <= r and rate + acceptable_delta >= r) then
+                    rateindex = i
+                    break
+                end
+            end
+            list[rateindex] = true
+        end,
+        SaveSelections = function(self, list, pn)
+            for i, v in ipairs(list) do
+                if v == true then
+                    local r = notShit.round(tonumber(delaylist[i]:sub(1, -3)) / 1000, 3)
+					PREFSMAN:SetPreference("VisualDelaySeconds", r)
+                    break
+                end
+            end
+        end,
+		NotifyOfSelection = function(self, pn, choice)
+			MESSAGEMAN:Broadcast("VisualDelayOptionChanged", {value = PREFSMAN:GetPreference("VisualDelaySeconds")})
+		end
+    }
+    setmetatable(t, t)
+    return t
+end
+
+function GlobalOffsetSeconds()
+    local numlist = {}
+    do
+		-- in milliseconds, 100 is pretty egregious
+        local start = -0.200
+        local upper = 0.200
+        local increment = 0.001
+        while start <= upper do
+			-- these rounds should force it to be milliseconds only
+            numlist[#numlist+1] = tostring(notShit.round(start * 1000)) .. "ms"
+            start = notShit.round(start + increment, 3)
+        end
+    end
+
+    local t = {
+        Name = "GlobalOffsetSeconds",
+        LayoutType = "ShowAllInRow",
+        SelectType = "SelectOne",
+        OneChoiceForAllPlayers = false,
+        ExportOnChange = true,
+        Choices = numlist,
+        LoadSelections = function(self, list, pn)
+            local rateindex = 1
+            local rate = notShit.round(PREFSMAN:GetPreference("GlobalOffsetSeconds"), 4)
+            local acceptable_delta = 0.0005
+            for i = 1, #numlist do
+                local r = tonumber(numlist[i]:sub(1, -3)) / 1000
+                if r == rate or (rate - acceptable_delta <= r and rate + acceptable_delta >= r) then
+                    rateindex = i
+                    break
+                end
+            end
+            list[rateindex] = true
+        end,
+        SaveSelections = function(self, list, pn)
+            for i, v in ipairs(list) do
+                if v == true then
+                    local r = notShit.round(tonumber(numlist[i]:sub(1, -3)) / 1000, 3)
+					PREFSMAN:SetPreference("GlobalOffsetSeconds", r)
+                    break
+                end
+            end
+        end,
+		NotifyOfSelection = function(self, pn, choice)
+			MESSAGEMAN:Broadcast("GlobalOffsetOptionChanged", {value = PREFSMAN:GetPreference("GlobalOffsetSeconds")})
 		end
     }
     setmetatable(t, t)

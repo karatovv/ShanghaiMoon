@@ -1,5 +1,6 @@
 #include "Etterna/Globals/global.h"
 #include "Etterna/Actor/Base/ActorUtil.h"
+#include "Etterna/Actor/Base/ActorFrame.h"
 #include "Etterna/Models/Misc/Foreach.h"
 #include "Etterna/Models/Misc/Game.h"
 #include "Etterna/Models/Misc/GameInput.h"
@@ -349,11 +350,45 @@ NoteSkinManager::GetMetric(const std::string& sButtonName,
 	return sReturn;
 }
 
+std::string
+NoteSkinManager::GetMetric(const std::string& sButtonName,
+						   const std::string& sValue, const std::string& sFallbackValue)
+{
+	if (m_sCurrentNoteSkin.empty()) {
+		LuaHelpers::ReportScriptError(
+		  "NOTESKIN:GetMetric: No noteskin currently set.", "NOTESKIN_ERROR");
+		return "";
+	}
+	auto sNoteSkinName = make_lower(m_sCurrentNoteSkin);
+	map<std::string, NoteSkinData>::const_iterator it =
+	  g_mapNameToData.find(sNoteSkinName);
+	ASSERT_M(it != g_mapNameToData.end(),
+			 sNoteSkinName); // this NoteSkin doesn't exist!
+	const auto& data = it->second;
+
+	std::string sReturn;
+	if (data.metrics.GetValue(sButtonName, sValue, sReturn))
+		return sReturn;
+	if (!data.metrics.GetValue("NoteDisplay", sValue, sReturn)) {
+		// dont report an error
+		return sFallbackValue;
+	}
+	return sReturn;
+}
+
 int
 NoteSkinManager::GetMetricI(const std::string& sButtonName,
 							const std::string& sValueName)
 {
 	return StringToInt(GetMetric(sButtonName, sValueName));
+}
+
+int
+NoteSkinManager::GetMetricI(const std::string& sButtonName,
+							const std::string& sValueName,
+							const std::string& sDefaultValue)
+{
+	return StringToInt(GetMetric(sButtonName, sValueName, sDefaultValue));
 }
 
 float
@@ -363,12 +398,29 @@ NoteSkinManager::GetMetricF(const std::string& sButtonName,
 	return StringToFloat(GetMetric(sButtonName, sValueName));
 }
 
+float
+NoteSkinManager::GetMetricF(const std::string& sButtonName,
+							const std::string& sValueName,
+							const std::string& sDefaultValue)
+{
+	return StringToFloat(GetMetric(sButtonName, sValueName, sDefaultValue));
+}
+
 bool
 NoteSkinManager::GetMetricB(const std::string& sButtonName,
 							const std::string& sValueName)
 {
 	// Could also call GetMetricI here...hmm.
 	return StringToInt(GetMetric(sButtonName, sValueName)) != 0;
+}
+
+bool
+NoteSkinManager::GetMetricB(const std::string& sButtonName,
+							const std::string& sValueName,
+							const std::string& sDefaultValue)
+{
+	// Could also call GetMetricI here...hmm.
+	return StringToInt(GetMetric(sButtonName, sValueName, sDefaultValue)) != 0;
 }
 
 apActorCommands
@@ -652,6 +704,33 @@ class LunaNoteSkinManager : public Luna<NoteSkinManager>
 	FOR_NOTESKIN(GetMetricA, 2);
 	FOR_NOTESKIN(LoadActor, 2);
 #undef FOR_NOTESKIN
+	static int AddChildActorForNoteSkin(T* p, lua_State* L) {
+		const std::string sOldNoteSkin = p->GetCurrentNoteSkin();
+		std::string nsname = SArg(3);
+		if (!p->DoesNoteSkinExist(nsname)) {
+			luaL_error(L, "Noteskin \"%s\" does not exist.", nsname.c_str());
+		}
+
+		auto actor = Luna<ActorFrame>::check(L, 4);
+
+		p->SetCurrentNoteSkin(nsname);
+		LoadActor(p, L);
+		p->SetCurrentNoteSkin(sOldNoteSkin);
+
+		auto xnode = XmlFileUtil::XNodeFromTable(L);
+		if (xnode == nullptr) {
+			// XNode will warn about the error
+			lua_pushnil(L);
+			return 1;
+		}
+
+		auto* result = ActorUtil::LoadFromNode(xnode, actor);
+		if (result != nullptr) {
+			actor->AddChild(result);
+		}
+		return 1;
+	}
+
 	static int GetNoteSkinNames(T* p, lua_State* L)
 	{
 		std::vector<std::string> vNoteskins;
@@ -691,6 +770,7 @@ class LunaNoteSkinManager : public Luna<NoteSkinManager>
 		ADD_METHOD(GetMetricBForNoteSkin);
 		ADD_METHOD(GetMetricAForNoteSkin);
 		ADD_METHOD(LoadActorForNoteSkin);
+		ADD_METHOD(AddChildActorForNoteSkin);
 		ADD_METHOD(GetNoteSkinNames);
 		ADD_METHOD(DoesNoteSkinExist); // for the current game
 	}

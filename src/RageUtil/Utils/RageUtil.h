@@ -276,13 +276,13 @@ ssicmp(const CT* pA1, const CT* pA2) -> int
 	return static_cast<int>(f - l);
 }
 
-static auto
+inline auto
 CompareNoCase(const std::string& a, const std::string& b) -> int
 {
 	return ssicmp(a.c_str(), b.c_str());
 }
 
-static auto
+inline auto
 EqualsNoCase(const std::string& a, const std::string& b) -> bool
 {
 	return CompareNoCase(a, b) == 0;
@@ -291,7 +291,7 @@ EqualsNoCase(const std::string& a, const std::string& b) -> bool
 void
 s_replace(std::string& target, std::string const& from, std::string const& to);
 
-static inline void
+inline void
 ensure_slash_at_end(std::string& s)
 {
 	if (s.back() != '/') {
@@ -622,7 +622,7 @@ ssprintf(const char* format, Args... args) -> std::string
 	return std::string(buf.get(), buf.get() + size - 1);
 }
 #if defined(__clang__)
-#pragma clang pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC pop
 #elif defined(_MSC_VER)
