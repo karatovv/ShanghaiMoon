@@ -414,7 +414,7 @@ t[#t + 1] = Def.ActorFrame {
 				self:settextf("%s%s", translated_info["Judge"], GetTimingDifficulty())
 			end
 			if GetHardRock() == true then
-				self:settextf("%s%s%s", translated_info["Judge"], GetTimingDifficulty(), " +HR")
+				self:settextf("%s%s%s", translated_info["Judge"], GetTimingDifficulty(), " + HR")
 			end
 		end
 	},

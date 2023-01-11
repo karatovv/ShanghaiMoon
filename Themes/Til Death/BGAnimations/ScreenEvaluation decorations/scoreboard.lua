@@ -243,7 +243,7 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 				local hr = hsTable[index]:GetHardRock()
 				local wstring = "OD" .. od
 				if hr == 1 then
-					wstring = "OD" .. od .. "+HR"
+					wstring = "OD" .. od .. " + HR"
 				end
 				if usingSSRSort then
 					wstring = "OD8"
@@ -259,8 +259,7 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 					end
 				end
 			end
-		},
-		--mods
+		},		--mods
 		LoadFont("Common normal") .. {
 			Name = "option",
 			InitCommand = function(self)

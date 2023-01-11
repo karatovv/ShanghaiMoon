@@ -38,7 +38,7 @@ local defaultGameplayCoordinates = {
 }
 
 local defaultGameplaySizes = {
-	JudgeZoom = 1.0,
+	JudgeZoom = 0.7,
 	ComboZoom = 0.6,
 	ErrorBarWidth = 240,
 	ErrorBarHeight = 10,

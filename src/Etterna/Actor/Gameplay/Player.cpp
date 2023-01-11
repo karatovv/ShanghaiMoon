@@ -1360,19 +1360,19 @@ Player::UpdateHoldNotes(int iSongRow,
 				return;
 			}
 
-			if (offset <= GetWindowSeconds(TW_W1) * 1.5f) {
+			if (offset <= GetWindowSeconds(TW_W1) * 2.0f) {
 				IncrementCombo();
 				tn.result.tns = TNS_W1;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W2) * 1.5f) {
+			} else if (offset <= GetWindowSeconds(TW_W2) * 2.0f) {
 				IncrementCombo();
 				tn.result.tns = TNS_W2;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W3) * 1.5f) {
+			} else if (offset <= GetWindowSeconds(TW_W3) * 2.0f) {
 				IncrementCombo();
 				tn.result.tns = TNS_W3;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W4) * 1.5f) {
+			} else if (offset <= GetWindowSeconds(TW_W4) * 2.0f) {
 				IncrementCombo();
 				tn.result.tns = TNS_W4;
 				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
