@@ -489,6 +489,8 @@ class Song
 	void SetHasGoal(bool b) { hasgoal = b; }
 	auto IsPermaMirror() const -> bool { return permamirror; }
 	void SetPermaMirror(bool b) { permamirror = b; }
+	auto IsPermaNoPitch() const -> bool { return permanopitch; }
+	void SetPermaNoPitch(bool b) { permanopitch = b; }
 
 	void SetEnabled(bool b) { m_bEnabled = b; }
 	[[nodiscard]] auto GetEnabled() const -> bool { return m_bEnabled; }
@@ -524,6 +526,7 @@ class Song
   private:
 	bool isfavorited = false;
 	bool permamirror = false;
+	bool permanopitch = false;
 	bool hasgoal = false;
 	/** @brief the Steps that belong to this Song. */
 	/** @brief the Steps of a particular StepsType that belong to this Song. */

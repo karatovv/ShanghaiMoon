@@ -58,6 +58,8 @@ PlayerStageStats::InternalInit()
 	CurWifeScore = 0.f;
 	MaxWifeScore = 0.f;
 	m_fTimingScale = 0.f;
+	m_fOsuOD = 0.f;
+	m_bHardRock = false;
 	m_vOffsetVector.clear();
 	m_vNoteRowVector.clear();
 	m_vTrackVector.clear();
@@ -323,7 +325,7 @@ PlayerStageStats::FormatPercentScore(float fPercentDancePoints)
 float
 PlayerStageStats::GetPercentDancePoints() const
 {
-	return MakePercentScore(m_iActualDancePoints, m_iPossibleDancePoints);
+	return MakePercentScore(CurWifeScore, MaxWifeScore);
 }
 float
 PlayerStageStats::GetWifeScore() const
@@ -367,6 +369,16 @@ float
 PlayerStageStats::GetTimingScale() const
 {
 	return m_fTimingScale;
+}
+float
+PlayerStageStats::GetOsuOD() const
+{
+	return m_fOsuOD;
+}
+bool
+PlayerStageStats::GetHardRock() const
+{
+	return m_bHardRock;
 }
 std::vector<InputDataEvent>
 PlayerStageStats::GetInputDataVector() const

@@ -203,13 +203,15 @@ class GameState
 	bool m_bLoadingNextSong;
 	[[nodiscard]] auto GetLoadingCourseSongIndex() const -> int;
 
-	static auto GetEtternaVersion() -> std::string { return "0.72.1"; }
+	static auto GetEtternaVersion() -> std::string { return "0.4"; }
 
 	/* is this the best place for this? it's not exactly a pref, and we
 	 * shouldn't be copying and pasting these values everywhere as needed j1-j4
 	 * are now all 1.f to remove j1-3 without having to mess with expected array
 	 * sizes in other areas yes i know this is lazy */
-	std::vector<float> timingscales = { 1.00F, 1.00F, 1.00F, 1.00F, 0.84F,
+	std::vector<float> timingscales = { 0.00F, 1.00F, 2.00F, 3.00F, 4.00F, 5.00F,
+										6.00F, 7.00F, 8.00F, 9.00F, 10.00F };
+	std::vector<float> timingscaleswife = { 1.00F, 1.00F, 1.00F, 1.00F, 0.84F,
 										0.66F, 0.50F, 0.33F, 0.20F };
 	bool isplaylistcourse = false;
 	[[nodiscard]] auto IsPlaylistCourse() const -> bool

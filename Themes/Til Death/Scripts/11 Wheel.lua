@@ -573,6 +573,7 @@ local function LegacyParams()
                 HasGoal = false,
                 Favorited = song:IsFavorited(),
                 PermaMirror = false,
+                PermaNoPitch = false,
                 PlayerNumber = PLAYER_1
             }
         )

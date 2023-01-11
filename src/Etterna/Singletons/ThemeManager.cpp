@@ -39,6 +39,7 @@ static const std::string THEME_INFO_INI = "ThemeInfo.ini";
 static const char* ElementCategoryNames[] = { "BGAnimations",
 											  "Fonts",
 											  "Graphics",
+											  "CustomBG",
 											  "Sounds",
 											  "Other" };
 XToString(ElementCategory);
@@ -688,6 +689,7 @@ ThemeManager::GetPathInfoToRaw(PathInfo& out,
 					case FT_Model:
 					case FT_Lua:
 						matches = category == EC_BGANIMATIONS ||
+								  category == EC_CUSTOMBG ||
 								  category == EC_GRAPHICS ||
 								  category == EC_SOUNDS;
 						break;
@@ -707,6 +709,7 @@ ThemeManager::GetPathInfoToRaw(PathInfo& out,
 						}
 					}
 						matches = category == EC_BGANIMATIONS ||
+								  category == EC_CUSTOMBG ||
 								  category == EC_GRAPHICS;
 						break;
 					case FT_Sound:
@@ -1495,6 +1498,7 @@ class LunaThemeManager : public Luna<ThemeManager>
 	}
 	GENERAL_GET_PATH(GetPathF);
 	GENERAL_GET_PATH(GetPathG);
+	GENERAL_GET_PATH(GetPathCB);
 	GENERAL_GET_PATH(GetPathB);
 	GENERAL_GET_PATH(GetPathS);
 	GENERAL_GET_PATH(GetPathO);
@@ -1622,6 +1626,7 @@ class LunaThemeManager : public Luna<ThemeManager>
 		ADD_METHOD(GetPathF);
 		ADD_METHOD(GetPathG);
 		ADD_METHOD(GetPathB);
+		ADD_METHOD(GetPathCB);
 		ADD_METHOD(GetPathS);
 		ADD_METHOD(GetPathO);
 		ADD_METHOD(RunLuaScripts);

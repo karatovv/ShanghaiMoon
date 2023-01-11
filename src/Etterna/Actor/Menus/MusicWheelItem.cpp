@@ -359,6 +359,8 @@ MusicWheelItem::RefreshGrades()
 		msg.SetParam("Favorited", 1);
 	if (pWID->m_pSong->IsPermaMirror())
 		msg.SetParam("PermaMirror", 1);
+	if (pWID->m_pSong->IsPermaNoPitch())
+		msg.SetParam("PermaNoPitch", 1);
 	if (pWID->m_pSong->HasGoal())
 		msg.SetParam("HasGoal", 1);
 	if (gradeBest != Grade_Invalid) {

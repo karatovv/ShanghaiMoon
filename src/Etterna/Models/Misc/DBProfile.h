@@ -57,6 +57,7 @@ class DBProfile
 	static void LoadPlayerScores(SQLite::Database* db);
 	auto LoadGeneralData(SQLite::Database* db) -> bool;
 	void LoadPermaMirrors(SQLite::Database* db);
+	void LoadPermaNoPitches(SQLite::Database* db);
 	void LoadScoreGoals(SQLite::Database* db);
 
 	static void SaveFavourites(SQLite::Database* db, const Profile* profile);
@@ -66,6 +67,7 @@ class DBProfile
 						  DBProfileMode mode);
 	static void SaveGeneralData(SQLite::Database* db, const Profile* profile);
 	static void SavePermaMirrors(SQLite::Database* db, const Profile* profile);
+	static void SavePermaNoPitches(SQLite::Database* db, const Profile* profile);
 	static void SaveScoreGoals(SQLite::Database* db, const Profile* profile);
 };
 

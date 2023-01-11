@@ -121,6 +121,18 @@ XMLProfile::SavePermaMirrorCreateNode(const Profile* profile) const
 }
 
 XNode*
+XMLProfile::SavePermaNoPitchCreateNode(const Profile* profile) const
+{
+	Locator::getLogger()->debug("Saving the permanopitches node.");
+
+	auto nopitch = new XNode("PermaNoPitch");
+	for (auto& it : profile->PermaNoPitchesCharts) {
+		nopitch->AppendChild(it);
+	}
+	return nopitch;
+}
+
+XNode*
 GoalsForChart::CreateNode() const
 {
 	auto cg = new XNode("GoalsForChart");
@@ -180,6 +192,16 @@ XMLProfile::LoadPermaMirrorFromNode(const XNode* pNode)
 	FOREACH_CONST_Child(pNode, ck)
 	  loadingProfile->PermaMirrorCharts.emplace(ck->GetName());
 	SONGMAN->SetPermaMirroredStatus(loadingProfile->PermaMirrorCharts);
+}
+
+void
+XMLProfile::LoadPermaNoPitchFromNode(const XNode* pNode)
+{
+	Locator::getLogger()->debug("Loading the permanopitch node.");
+
+	FOREACH_CONST_Child(pNode, ck)
+	  loadingProfile->PermaNoPitchesCharts.emplace(ck->GetName());
+	SONGMAN->SetPermaNoPitchedStatus(loadingProfile->PermaNoPitchesCharts);
 }
 
 void
@@ -483,6 +505,10 @@ XMLProfile::LoadEttXmlFromNode(const XNode* xml)
 	if (pmir)
 		LoadPermaMirrorFromNode(pmir);
 
+	auto nopitch = xml->GetChild("PermaNoPitch");
+	if (nopitch)
+		LoadPermaNoPitchFromNode(nopitch);
+
 	auto goals = xml->GetChild("ScoreGoals");
 	if (goals)
 		LoadScoreGoalsFromNode(goals);
@@ -491,7 +517,7 @@ XMLProfile::LoadEttXmlFromNode(const XNode* xml)
 	if (play)
 		LoadPlaylistsFromNode(play);
 
-	auto scores = xml->GetChild("PlayerScores");
+	auto scores = xml->GetChild("OsuOD8Scores");
 	if (scores)
 		LoadEttScoresFromNode(scores);
 
@@ -509,6 +535,9 @@ XMLProfile::SaveEttXmlCreateNode(const Profile* profile) const
 
 	if (!profile->PermaMirrorCharts.empty())
 		xml->AppendChild(SavePermaMirrorCreateNode(profile));
+
+	if (!profile->PermaNoPitchesCharts.empty())
+		xml->AppendChild(SavePermaNoPitchCreateNode(profile));
 
 	if (!profile->allplaylists.empty())
 		xml->AppendChild(SavePlaylistsCreateNode(profile));

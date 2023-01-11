@@ -441,7 +441,19 @@ TimingWindowScale(int& sel, bool ToSel, const ConfOption* pConfOption)
 	// we are no longer supporting j1-3, they will be set to 1.f like j4
 	// to avoid issues with expected array sizes that i do not want to debug
 	auto& ts = GAMESTATE->timingscales;
-	float mapping[9]; // hardcodered because ide yell at me
+	float mapping[11]; // hardcodered because ide yell at me
+	for (size_t i = 0; i < ts.size(); ++i)
+		mapping[i] = ts[i];
+	MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+}
+
+static void
+HardRock(int& sel, bool ToSel, const ConfOption* pConfOption)
+{
+	// we are no longer supporting j1-3, they will be set to 1.f like j4
+	// to avoid issues with expected array sizes that i do not want to debug
+	auto& ts = GAMESTATE->timingscales;
+	float mapping[11]; // hardcodered because ide yell at me
 	for (size_t i = 0; i < ts.size(); ++i)
 		mapping[i] = ts[i];
 	MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
@@ -463,21 +475,31 @@ LifeDifficulty(int& sel, bool ToSel, const ConfOption* pConfOption)
 
 #include "Etterna/Singletons/LuaManager.h"
 
+static bool
+GetHardRock()
+{
+	bool bHardRock = false;
+	bHardRock = PREFSMAN->m_bHardRock;
+	
+	return (bHardRock);
+}
+LuaFunction(GetHardRock, GetHardRock());
 static int
 GetTimingDifficulty()
 {
 	int iTimingDifficulty = 0;
 	TimingWindowScale(
-	  iTimingDifficulty, true, ConfOption::Find("TimingWindowScale"));
+	  iTimingDifficulty, true, ConfOption::Find("OsuOD"));
 	iTimingDifficulty++; // TimingDifficulty returns an index
-	return iTimingDifficulty;
+	return (iTimingDifficulty - 1);
 }
 LuaFunction(GetTimingDifficulty, GetTimingDifficulty());
 static int
 SetTimingDifficulty(float judge)
 {
-	auto opt = ConfOption::Find("TimingWindowScale");
-	IPreference* pPref = IPreference::GetPreferenceByName(opt->m_sPrefName);
+	int iTimingDifficulty = static_cast<int>(judge);
+	auto opt = ConfOption::Find("OsuOD");
+	IPreference* pPref = IPreference::GetPreferenceByName("osuOD");
 	pPref->FromString(ToString(judge));
 	return 1;
 }
@@ -828,8 +850,9 @@ InitializeConfOptions()
 	ADD(ConfOption("EnableMinidumpUpload", MovePref<bool>, "Off", "On"));
 
 	// Machine options
-	ADD(ConfOption("TimingWindowScale",
+	ADD(ConfOption("OsuOD",
 				   TimingWindowScale,
+				   "|0",
 				   "|1",
 				   "|2",
 				   "|3",
@@ -838,7 +861,12 @@ InitializeConfOptions()
 				   "|6",
 				   "|7",
 				   "|8",
-				   "Justice"));
+				   "|9",
+				   "|10"));
+	ADD(ConfOption("HardRock", MovePref<bool>, "Off", "On"));
+
+	ADD(ConfOption("CustomBG", MovePref<bool>, "Off", "On"));
+
 	ADD(ConfOption("LifeDifficulty",
 				   LifeDifficulty,
 				   "|1",

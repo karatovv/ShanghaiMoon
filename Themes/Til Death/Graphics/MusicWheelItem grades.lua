@@ -52,6 +52,20 @@ return Def.ActorFrame {
 	},
 	Def.Sprite {
 		InitCommand = function(self)
+			self:xy(-9, -0):zoomto(4, 19)
+		end,
+		SetGradeCommand = function(self, params)
+			if params.PermaNoPitch then
+				self:Load(THEME:GetPathG("", "nopitch"))
+				self:zoomto(20, 20)
+				self:visible(true)
+			else
+				self:visible(false)
+			end
+		end
+	},
+	Def.Sprite {
+		InitCommand = function(self)
 			self:xy(1, -15):zoomto(4, 19)
 		end,
 		SetGradeCommand = function(self, params)

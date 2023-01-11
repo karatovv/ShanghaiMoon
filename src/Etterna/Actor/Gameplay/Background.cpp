@@ -24,6 +24,14 @@
 #include <deque>
 #include <algorithm>
 
+#include <string>
+#include <iostream>
+#include <filesystem>
+#include <vector>
+#include <random>
+
+namespace fs = std::filesystem;
+
 using std::deque;
 using std::map;
 
@@ -308,7 +316,21 @@ BackgroundImpl::Layer::CreateBackground(const Song* pSong,
 		std::vector<std::string> vsPaths, vsThrowAway;
 
 		// Look for BGAnims in the song dir
-		if (sToResolve == SONG_BACKGROUND_FILE)
+		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG)
+			srand(time(0));
+			std::vector <std::string> custombgs;
+			std::string path = "./Themes/Til Death/CustomBG/";
+			for (const auto& entry : fs::directory_iterator(path))
+				custombgs.push_back(entry.path().filename().string());
+			int size = custombgs.size();
+			if (size != 0) {
+				std::string chosenbg = custombgs.at(rand() % size + 0);
+				vsPaths.push_back(THEME->GetPathCB("", chosenbg));
+			}
+			if (size == 0) {
+				vsPaths.push_back(THEME->GetPathG("Common", "fallback background"));
+			}
+		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG == false)
 			vsPaths.push_back(
 			  pSong->HasBackground()
 				? pSong->GetBackgroundPath()

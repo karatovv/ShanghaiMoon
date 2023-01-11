@@ -3,13 +3,19 @@
 .vscode
 .vs
 .idea
+.cache
 /[Bb]uild
+/dbgbuild
 
 # Ignore executables (Linux, macOS, Windows)
 /Etterna
 /Etterna-debug
 /Etterna-MinSizeRelease
 /Etterna-RelWithDebInfo
+/ShanghaiMoon
+/ShanghaiMoon-debug
+/ShanghaiMoon-MinSizeRelease
+/ShanghaiMoon-RelWithDebInfo
 /*.app
 /*.exe
 

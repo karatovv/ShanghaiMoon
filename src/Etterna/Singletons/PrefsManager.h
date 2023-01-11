@@ -155,7 +155,7 @@ class PrefsManager
 	Preference<bool> m_bShowBackgrounds;
 
 	Preference<bool> m_bDelayedBack;
-	Preference<bool> m_AllowStartToGiveUp;
+	Preference<bool>m_AllowStartToGiveUp;
 	Preference<bool> m_AllowHoldForOptions;
 	Preference<bool> m_bShowNativeLanguage;
 	Preference<bool> m_bFullTapExplosions;
@@ -180,6 +180,8 @@ class PrefsManager
 	Preference<int> m_fCenterImageAddHeight;
 	Preference<bool> EnablePitchRates;
 	Preference<bool> LiftsOnOsuHolds;
+	Preference<bool> m_bHardRock;
+	Preference<bool> m_bCustomBG;
 	Preference<bool> m_bEasterEggs;
 	Preference<bool> m_AllowMultipleToasties;
 	Preference<bool> m_bUseMidGrades;

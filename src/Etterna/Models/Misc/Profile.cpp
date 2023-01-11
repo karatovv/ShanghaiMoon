@@ -482,6 +482,12 @@ Profile::RemoveFromPermaMirror(const string& ck)
 	PermaMirrorCharts.erase(ck);
 }
 
+void
+Profile::RemoveFromPermaNoPitches(const string& ck)
+{
+	PermaNoPitchesCharts.erase(ck);
+}
+
 // more future goalman stuff (perhaps this should be standardized to "add" in
 // order to match scoreman nomenclature) -mina
 bool
@@ -1079,6 +1085,21 @@ class LunaProfile : public Luna<Profile>
 		return 1;
 	}
 
+	static int IsCurrentChartPermaNoPitch(T* p, lua_State* L)
+	{
+		auto o = false;
+
+		if (GAMESTATE->m_pCurSteps) {
+			const auto& ck = GAMESTATE->m_pCurSteps->GetChartKey();
+
+			if (p->PermaNoPitchesCharts.count(ck))
+				o = true;
+		}
+
+		lua_pushboolean(L, static_cast<int>(o));
+		return 1;
+	}
+
 	// ok i should probably handle this better -mina
 	static int GetEasiestGoalForChartAndRate(T* p, lua_State* L)
 	{
@@ -1166,6 +1187,7 @@ class LunaProfile : public Luna<Profile>
 		ADD_METHOD(GetIgnoreStepCountCalories);
 		ADD_METHOD(CalculateCaloriesFromHeartRate);
 		ADD_METHOD(IsCurrentChartPermamirror);
+		ADD_METHOD(IsCurrentChartPermaNoPitch);
 		ADD_METHOD(GetEasiestGoalForChartAndRate);
 		ADD_METHOD(RenameProfile);
 		ADD_METHOD(AddGoal);

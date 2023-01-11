@@ -160,7 +160,7 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 					local date = p:GetChild("date")
 					local option = p:GetChild("option")
 					local cleartype = p:GetChild("ClearType")
-					
+
 					grade:visible(not grade:GetVisible())
 					judge:visible(not judge:GetVisible())
 					date:visible(not date:GetVisible())
@@ -239,9 +239,14 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 			BeginCommand = function(self)
 				if hsTable[index] == nil then return end
 				local wv = hsTable[index]:GetWifeVers()
-				local wstring = "Wife" .. wv
+				local od = hsTable[index]:GetOsuOD()
+				local hr = hsTable[index]:GetHardRock()
+				local wstring = "OD" .. od
+				if hr == 1 then
+					wstring = "OD" .. od .. "+HR"
+				end
 				if usingSSRSort then
-					wstring = "Wife" .. wv .. " J4"
+					wstring = "OD8"
 				end
 				if hsTable[index]:GetWifeScore() == 0 then
 					self:settextf("NA (%s)", wstring)
@@ -250,7 +255,7 @@ local function scoreitem(pn, index, scoreIndex, drawindex)
 					if perc > 99.65 then
 						self:settextf("%05.4f%% (%s)", notShit.floor(perc, 4), wstring)
 					else
-						self:settextf("%05.2f%% (%s)", notShit.floor(perc, 2), wstring)
+						self:settextf("%05.2f%% (%s)", notShit.floor(perc, 4), wstring)
 					end
 				end
 			end

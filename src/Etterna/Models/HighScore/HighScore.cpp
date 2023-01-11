@@ -38,6 +38,7 @@ struct HighScoreImpl
 	Grade grade;
 	unsigned int iScore;
 	float fPercentDP;
+	float fPercentDP1;
 	float fWifeScore;
 	float fWifePoints;
 	float fSSRNormPercent;
@@ -45,6 +46,8 @@ struct HighScoreImpl
 	float fMusicRate;
 	float fSongOffset;
 	float fJudgeScale;
+	float fOsuOD;
+	bool bHardRock;
 	bool bNoChordCohesion;
 	bool bEtternaValid;
 	bool bUsedDS;
@@ -96,11 +99,11 @@ HighScoreImpl::GetWifeGrade() const -> Grade
 		return Grade_Failed;
 	}
 
-	auto pc = fWifeScore;
+	auto pc = fPercentDP;
 
-	if (PREFSMAN->m_bSortBySSRNorm) {
-		pc = fSSRNormPercent;
-	}
+	//if (PREFSMAN->m_bSortBySSRNorm) {
+	//	pc = fSSRNormPercent;
+	//}
 
 	return GetGradeFromPercent(pc);
 }
@@ -121,12 +124,15 @@ HighScoreImpl::HighScoreImpl()
 	grade = Grade_Invalid;
 	iScore = 0;
 	fPercentDP = 0.F;
+	fPercentDP1 = 0.F;
 	fWifeScore = 0.F;
 	fWifePoints = 0.F;
 	fSSRNormPercent = 0.F;
 	fMusicRate = 0.F;
 	fSongOffset = 0.F; // not for saving, only for replays
 	fJudgeScale = 0.F;
+	fOsuOD = 0.F;
+	bHardRock = false;
 	bEtternaValid = true;
 	played_seconds = 0.F;
 	iMaxCombo = 0;
@@ -164,6 +170,8 @@ HighScoreImpl::CreateEttNode() const -> XNode*
 
 	pNode->AppendChild("SSRCalcVersion", SSRCalcVersion);
 	pNode->AppendChild("Grade", GradeToString(GetWifeGrade()));
+	pNode->AppendChild("PercentDP", fPercentDP);
+	pNode->AppendChild("PercentDP", fPercentDP1);
 	pNode->AppendChild("WifeScore", fWifeScore);
 
 	if (fWifePoints > 0.F) {
@@ -172,6 +180,8 @@ HighScoreImpl::CreateEttNode() const -> XNode*
 
 	pNode->AppendChild("SSRNormPercent", fSSRNormPercent);
 	pNode->AppendChild("JudgeScale", fJudgeScale);
+	pNode->AppendChild("OsuOD", fOsuOD);
+	pNode->AppendChild("HardRock", bHardRock);
 	pNode->AppendChild("NoChordCohesion", bNoChordCohesion);
 	pNode->AppendChild("EtternaValid", bEtternaValid);
 	if (bUsedDS) {
@@ -244,10 +254,14 @@ HighScoreImpl::LoadFromEttNode(const XNode* pNode)
 		grade = StringToGrade(s);
 	}
 	pNode->GetChildValue("WifeScore", fWifeScore);
+	pNode->GetChildValue("PercentDP", fPercentDP);
+	pNode->GetChildValue("PercentDP", fPercentDP1);
 	pNode->GetChildValue("WifePoints", fWifePoints);
 	pNode->GetChildValue("SSRNormPercent", fSSRNormPercent);
 	pNode->GetChildValue("Rate", fMusicRate);
 	pNode->GetChildValue("JudgeScale", fJudgeScale);
+	pNode->GetChildValue("OsuOD", fOsuOD);
+	pNode->GetChildValue("HardRock", bHardRock);
 	pNode->GetChildValue("NoChordCohesion", bNoChordCohesion);
 	pNode->GetChildValue("EtternaValid", bEtternaValid);
 	auto dsSuccess = pNode->GetChildValue("DSFlag", bUsedDS);
@@ -501,7 +515,7 @@ HighScore::GetPercentDP() const -> float
 auto
 HighScore::GetWifeScore() const -> float
 {
-	return m_Impl->fWifeScore;
+	return m_Impl->fPercentDP;
 }
 auto
 HighScore::GetWifePoints() const -> float
@@ -527,6 +541,16 @@ auto
 HighScore::GetJudgeScale() const -> float
 {
 	return m_Impl->fJudgeScale;
+}
+auto
+HighScore::GetOsuOD() const -> float
+{
+	return m_Impl->fOsuOD;
+}
+auto
+HighScore::GetHardRock() const -> bool
+{
+	return m_Impl->bHardRock;
 }
 auto
 HighScore::GetChordCohesion() const -> bool
@@ -811,6 +835,16 @@ void
 HighScore::SetJudgeScale(float f)
 {
 	m_Impl->fJudgeScale = f;
+}
+void
+HighScore::SetHardRock(bool b)
+{
+	m_Impl->bHardRock = b;
+}
+void
+HighScore::SetOsuOD(float f)
+{
+	m_Impl->fOsuOD= f;
 }
 void
 HighScore::SetChordCohesion(bool b)
@@ -1215,7 +1249,7 @@ HighScore::RescoreToWife3(float pmax) -> bool
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
 				p4 += wife3(vOffsetVector[i], 1);
-				pj += wife3(vOffsetVector[i], m_Impl->fJudgeScale);
+				pj += wife3(vOffsetVector[i], 1);
 			}
 		}
 	} else {
@@ -1226,11 +1260,13 @@ HighScore::RescoreToWife3(float pmax) -> bool
 		}
 	}
 
-	const auto holdpoints = static_cast<float>(m_Impl->iHoldNoteScores[HNS_LetGo] +
-							 m_Impl->iHoldNoteScores[HNS_Missed]) *
-							wife3_hold_drop_weight;
+	const auto holdpoints =
+	  static_cast<float>(m_Impl->iHoldNoteScores[HNS_LetGo] +
+						 m_Impl->iHoldNoteScores[HNS_Missed]) *
+	  wife3_hold_drop_weight;
 	const auto minepoints =
-	  static_cast<float>(m_Impl->iTapNoteScores[TNS_HitMine]) * wife3_mine_hit_weight;
+	  static_cast<float>(m_Impl->iTapNoteScores[TNS_HitMine]) *
+	  wife3_mine_hit_weight;
 
 	p4 += holdpoints + minepoints;
 	pj += holdpoints + minepoints;
@@ -1261,17 +1297,17 @@ HighScore::RescoreToDPJudge(int x) -> float
 	for (auto& f : vOffsetVector) {
 		m2 += 2;
 		const auto x = std::abs(f * 1000.F);
-		if (x <= ts * 22.5F) {
+		if (x <= ts * 16.5F) {
 			++marv;
-		} else if (x <= ts * 45.F) {
+		} else if (x <= ts * 40.5F) {
 			++perf;
-		} else if (x <= ts * 90.F) {
+		} else if (x <= ts * 73.5F) {
 			++great;
-		} else if (x <= ts * 135.F) {
+		} else if (x <= ts * 103.5F) {
 			++good;
-		} else if (x <= ts * 180.F) {
+		} else if (x <= ts * 127.5F) {
 			++boo;
-		} else {
+		} else if (x <= ts * 164.5F) {
 			++miss;
 		}
 	}
@@ -1287,21 +1323,10 @@ HighScore::RescoreToDPJudge(int x) -> float
 	SetRescoreJudgeVector(vRescoreJudgeVector);
 
 	auto p = 0;
-	p += (marv + perf) * 2;
-	p += great * 1;
-	p += boo * -4;
-	p += miss * -8;
-	p += m_Impl->iHoldNoteScores[HNS_Held] * 6;
-	p += m_Impl->iTapNoteScores[TNS_HitMine] * -8;
-	p += (m_Impl->iHoldNoteScores[HNS_LetGo] +
-		  m_Impl->iHoldNoteScores[HNS_Missed]) *
-		 -6;
+	p = (50 * boo + 100 * good + 200 * great + 300 * (marv + perf)) / (300 * (miss + boo + good + great + perf + marv));
 
-	auto m = static_cast<float>(vOffsetVector.size() * 2);
-	m += static_cast<float>(m_Impl->radarValues[RadarCategory_Holds] +
-		  m_Impl->radarValues[RadarCategory_Rolls]) *
-		 6;
-	return static_cast<float>(p) / m;
+	return p;
+	m_Impl->fPercentDP = p;
 }
 
 auto
@@ -1318,7 +1343,7 @@ HighScore::NormalizeJudgments() -> bool
 	if (!IsEmptyNormalized())
 		return true;
 
-	// Normalizing to J4, a J4 score needs no normalizing
+	// Normalizing to OD8, a OD8 score needs no normalizing
 	if (m_Impl->fJudgeScale == 1.F) {
 		FOREACH_ENUM(TapNoteScore, tns)
 		m_Impl->iTapNoteScoresNormalized[tns] = m_Impl->iTapNoteScores[tns];
@@ -1357,15 +1382,15 @@ HighScore::NormalizeJudgments() -> bool
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
 				const auto x = std::abs(vOffsetVector[i] * 1000.F);
-				if (x <= 22.5F) {
+				if (x <= 16.5F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W1]++;
-				} else if (x <= 45.F) {
+				} else if (x <= 40.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W2]++;
-				} else if (x <= 90.F) {
+				} else if (x <= 73.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W3]++;
-				} else if (x <= 135.F) {
+				} else if (x <= 103.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W4]++;
-				} else if (x <= 180.F) {
+				} else if (x <= 127.F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W5]++;
 				} else {
 					// should anything outside the window be treated as a boo?
@@ -1424,31 +1449,7 @@ HighScore::GetWifeGrade() const -> Grade
 auto
 HighScore::ConvertDpToWife() -> float
 {
-	if (m_Impl->fWifeScore > 0.F) {
-		if (PREFSMAN->m_bSortBySSRNorm) {
-			return m_Impl->fSSRNormPercent;
-		}
-		return m_Impl->fWifeScore;
-	}
-
-	if (m_Impl->grade == Grade_Failed) {
-		return 0.F;
-	}
-
-	const auto ts = 1.F;
-	auto estpoints = 0.F;
-	auto maxpoints = 0.F;
-	estpoints += static_cast<float>(m_Impl->iTapNoteScores[TNS_W1]) * wife3(.01125F, ts);
-	estpoints += static_cast<float>(m_Impl->iTapNoteScores[TNS_W2]) * wife3(.03375F, ts);
-	estpoints += static_cast<float>(m_Impl->iTapNoteScores[TNS_W3]) * wife3(.0675F, ts);
-	estpoints += static_cast<float>(m_Impl->iTapNoteScores[TNS_W4]) * wife3(.1125F, ts);
-	estpoints += static_cast<float>(m_Impl->iTapNoteScores[TNS_W5]) * wife3(.1575F, ts);
-	estpoints += static_cast<float>(m_Impl->iTapNoteScores[TNS_Miss]) * wife3_miss_weight;
-
-	FOREACH_ENUM(TapNoteScore, tns)
-	maxpoints += static_cast<float>(2 * m_Impl->iTapNoteScores[tns]);
-
-	return estpoints / maxpoints;
+	return m_Impl->fPercentDP;
 }
 
 // lua start
@@ -1495,6 +1496,16 @@ class LunaHighScore : public Luna<HighScore>
 	static auto GetJudgeScale(T* p, lua_State* L) -> int
 	{
 		lua_pushnumber(L, p->GetJudgeScale());
+		return 1;
+	}
+	static auto GetOsuOD(T* p, lua_State* L) -> int
+	{
+		lua_pushnumber(L, p->GetOsuOD());
+		return 1;
+	}
+	static auto GetHardRock(T* p, lua_State* L) -> int
+	{
+		lua_pushnumber(L, p->GetHardRock());
 		return 1;
 	}
 	static auto GetDate(T* p, lua_State* L) -> int
@@ -1773,6 +1784,8 @@ class LunaHighScore : public Luna<HighScore>
 		ADD_METHOD(GetSkillsetSSR);
 		ADD_METHOD(GetMusicRate);
 		ADD_METHOD(GetJudgeScale);
+		ADD_METHOD(GetOsuOD);
+		ADD_METHOD(GetHardRock);
 		ADD_METHOD(GetChordCohesion);
 		ADD_METHOD(GetDate);
 		ADD_METHOD(GetPlayedSeconds);

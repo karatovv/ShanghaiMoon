@@ -170,6 +170,11 @@ local t = Def.ActorFrame {
 			local playeroptions = GAMESTATE:GetPlayerState():GetPlayerOptions(modslevel)
 			playeroptions:Mirror(false)
 		end
+		if profile:IsCurrentChartPermaNoPitch() then
+			local modslevel = topscreen == "ScreenEditOptions" and "ModsLevel_Stage" or "ModsLevel_Preferred"
+			local playeroptions = GAMESTATE:GetPlayerState():GetPlayerOptions(modslevel)
+			PREFSMAN:SetPreference("EnablePitchRates", true)
+		end
 		-- if not on General and we started the noteField and we changed tabs then changed songs
 		-- this means the music should be set again as long as the preview is still "on" but off screen
 		if getTabIndex() ~= 0 and noteField and heyiwasusingthat then
@@ -547,8 +552,14 @@ t[#t + 1] = Def.ActorFrame {
 		MintyFreshCommand = function(self)
 			if song and score then
 				local wv = score:GetWifeVers()
-				local ws = " W" .. wv
-				self:settext(ws):diffuse(byGrade(score:GetWifeGrade()))
+				local od = score:GetOsuOD()
+				local hr = score:GetHardRock()
+				if hr == 0 then
+					self:settext("OD" .. od):diffuse(byGrade(score:GetWifeGrade()))
+				end
+				if hr == 1 then
+					self:settext("OD" .. od .. "+HR"):diffuse(byGrade(score:GetWifeGrade()))
+				end
 			else
 				self:settext("")
 			end
@@ -752,6 +763,7 @@ t[#t + 1] =LoadFont("Common Normal") .. {
 	end
 }
 
+local show = false
 -- cdtitle
 t[#t + 1] = UIElements.SpriteButton(1, 1, nil) .. {
 	InitCommand = function(self)
@@ -760,6 +772,26 @@ t[#t + 1] = UIElements.SpriteButton(1, 1, nil) .. {
 	end,
 	CurrentStyleChangedMessageCommand = function(self)
 		self:playcommand("MortyFarts")
+	end,
+	BeginCommand = function(self)
+		SCREENMAN:GetTopScreen():AddInputCallback(function(event)
+
+			if(isOver(self) and event.type == "InputEventType_Release") then
+				if event.DeviceInput.button == "DeviceButton_left mouse button" then
+					show = not show
+			  end
+			if show == true then
+				local auth = song:GetOrTryAtLeastToGetSimfileAuthor()
+				TOOLTIP:SetText(auth)
+				TOOLTIP:Show()
+		  end
+			if show == false then
+				TOOLTIP:Hide()
+		  end
+
+			end
+
+		end)
 	end,
 	MortyFartsCommand = function(self)
 		self:finishtweening()
@@ -925,7 +957,7 @@ local function toggleButton(textEnabled, textDisabled, msg, x, extrawidth, y, en
 					else
 						ison = (not ison)
 					end
-					
+
 					-- wtf 2
 					self:diffuse(ison and color(enabledC) or getMainColor("highlight"))
 					NSMAN:SendChatMsg(msg, 1, NSMAN:GetCurrentRoomName())

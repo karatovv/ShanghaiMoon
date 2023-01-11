@@ -401,7 +401,7 @@ local l = Def.ActorFrame {
 	},
 	-- Wife display
 	LoadFont("Common Normal") .. {
-		Name = "Wife",
+		Name = "OSU",
 		InitCommand = function(self)
 			self:xy(65, 15):zoom(0.6):halign(0):settext("")
 		end,
@@ -410,19 +410,16 @@ local l = Def.ActorFrame {
 				self:settextf("NA")
 			else
 				local wv = score:GetWifeVers()
-				local ws = "Wife" .. wv .. " J"
-				local judge = 4
-				if PREFSMAN:GetPreference("SortBySSRNormPercent") == false then
-					judge = table.find(ms.JudgeScalers, notShit.round(score:GetJudgeScale(), 2))
-				end
-				if not judge then judge = 4 end
-				if judge < 4 then judge = 4 end
-				local js = judge ~= 9 and judge or "ustice"
+				local ws = "osu!mania OD"
+				local judge = score:GetOsuOD()
+				local hr = score:GetHardRock()
+				if not judge then judge = "??" end
 				local perc = score:GetWifeScore() * 100
-				if perc > 99.65 then
-					self:settextf("%05.4f%% (%s)", notShit.floor(perc, 4), ws .. js)
-				else
-					self:settextf("%05.2f%% (%s)", notShit.floor(perc, 2), ws .. js)
+				if hr == 0 then
+					self:settextf("%05.2f%% (%s)", notShit.floor(perc, 2), ws .. judge)
+				end
+				if hr == 1 then
+					self:settextf("%05.2f%% (%s %s)", notShit.floor(perc, 2), ws .. judge, "+HR")
 				end
 				self:diffuse(byGrade(score:GetWifeGrade()))
 			end
@@ -528,10 +525,15 @@ local l = Def.ActorFrame {
 			self:xy(frameX + offsetX + 55,frameHeight - headeroffY - 65 - offsetY):zoom(0.45):halign(0.5):settext("")
 		end,
 		DisplayCommand = function(self)
-			local j = table.find(ms.JudgeScalers, notShit.round(score:GetJudgeScale(), 2))
-			if not j then j = 4 end
-			if j < 4 then j = 4 end
-			self:settextf("%s %i", translated_info["Judge"], j)
+			local j = score:GetOsuOD()
+			local hr = score:GetHardRock()
+			if not j then j = "??" end
+			if hr == 0 then
+				self:settextf("%s%i", translated_info["Judge"], j)
+			end
+			if hr == 1 then
+				self:settextf("%s%i %s", translated_info["Judge"], j, "+HR")
+			end
 		end
 	},
 	LoadFont("Common Normal") .. {

@@ -1,3 +1,4 @@
+#include "Core/Services/Locator.hpp"
 #include "Etterna/Globals/global.h"
 #include "Etterna/Actor/Base/ActorUtil.h"
 #include "Etterna/Models/Misc/AdjustSync.h"
@@ -5,6 +6,7 @@
 #include "Etterna/Models/Misc/Game.h"
 #include "Etterna/Models/Misc/GameCommand.h"
 #include "Etterna/Models/Misc/GameConstantsAndTypes.h"
+#include "Etterna/Models/Misc/NoteTypes.h"
 #include "Etterna/Singletons/GameSoundManager.h"
 #include "Etterna/Singletons/GameState.h"
 #include "Etterna/Singletons/InputMapper.h"
@@ -42,10 +44,10 @@
 using std::max;
 using std::min;
 
-void
-TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
-						std::string& sNameOut,
-						float& defaultValueOut);
+//void
+//TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
+//						std::string& sNameOut,
+//						float& defaultValueOut);
 
 void
 TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
@@ -56,19 +58,22 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 			   TimingWindowToString(static_cast<TimingWindow>(i));
 	switch (i) {
 		case TW_W1:
-			defaultValueOut = 0.0225F;
+			defaultValueOut = 0.0165F;
 			break;
 		case TW_W2:
-			defaultValueOut = 0.045F;
+			defaultValueOut = 0.0645F;
 			break;
 		case TW_W3:
-			defaultValueOut = 0.090F;
+			defaultValueOut = 0.0975F;
 			break;
 		case TW_W4:
-			defaultValueOut = 0.135F;
+			defaultValueOut = 0.1275F;
 			break;
 		case TW_W5:
-			defaultValueOut = 0.180F;
+			defaultValueOut = 0.1515F;
+			break;
+		case TW_Miss:
+			defaultValueOut = 0.1885F;
 			break;
 		case TW_Mine:
 			// ~same as j5 great, the explanation for this is quite long but
@@ -93,8 +98,13 @@ TimingWindowSecondsInit(size_t /*TimingWindow*/ i,
 }
 
 static Preference<float> m_fTimingWindowScale("TimingWindowScale", 1.0F);
+static Preference<float> m_fOsuOD("OsuOD", 8.0F);
+static Preference<float> m_fTimingWindowAdd("TimingWindowAdd", 0);
 static Preference1D<float> m_fTimingWindowSeconds(TimingWindowSecondsInit,
 												  NUM_TimingWindow);
+static Preference<float> m_fTimingWindowJump("TimingWindowJump", 0.25);
+static Preference<float> m_fMaxInputLatencySeconds("MaxInputLatencySeconds",
+												   0.0);
 static Preference<bool> g_bEnableMineSoundPlayback("EnableMineHitSound", true);
 
 // moved out of being members of player.h
@@ -200,8 +210,13 @@ Player::GetWindowSeconds(TimingWindow tw) -> float
 	}
 
 	float fSecs = m_fTimingWindowSeconds[tw];
-	fSecs *= GetTimingWindowScale();
-	fSecs = std::clamp(fSecs, 0.F, MISS_WINDOW_BEGIN_SEC);
+	if (tw != TW_W1 && m_fOsuOD != 0.0F)
+	{
+		fSecs -= m_fOsuOD * 3 / 1000;
+	}
+
+	if (PREFSMAN->m_bHardRock)
+		fSecs /= 1.4f;
 	return fSecs;
 }
 
@@ -288,6 +303,12 @@ Player::~Player()
 	SAFE_DELETE(m_pIterUnjudgedMineRows);
 }
 
+#ifdef LOG_SCORE_DATA
+int counterSetJudgment = 0;
+int judgmentCounter[10];
+#endif
+
+
 /* Init() does the expensive stuff: load sounds and noteskins.  Load() just
  * loads a NoteData. */
 void
@@ -324,6 +345,12 @@ Player::Init(const std::string& sType,
 
 	m_iLastSeenCombo = 0;
 	m_bSeenComboYet = false;
+	#ifdef LOG_SCORE_DATA
+	counterSetJudgment = 0;
+
+	for (int i = 4; i < 10; i++)
+		judgmentCounter[i] = 0;
+	#endif
 
 	// set initial life
 	if ((m_pLifeMeter != nullptr) && (m_pPlayerStageStats != nullptr)) {
@@ -462,10 +489,10 @@ Player::NeedsTapJudging(const TapNote& tn) -> bool
 		DEFAULT_FAIL(tn.type);
 		case TapNoteType_Tap:
 		case TapNoteType_HoldHead:
+		case TapNoteType_HoldTail:
 		case TapNoteType_Mine:
 		case TapNoteType_Lift:
 			return tn.result.tns == TNS_None;
-		case TapNoteType_HoldTail:
 		case TapNoteType_AutoKeysound:
 		case TapNoteType_Fake:
 		case TapNoteType_Empty:
@@ -483,9 +510,9 @@ Player::NeedsHoldJudging(const TapNote& tn) -> bool
 	switch (tn.type) {
 		DEFAULT_FAIL(tn.type);
 		case TapNoteType_HoldHead:
+		case TapNoteType_HoldTail:
 			return tn.HoldResult.hns == HNS_None;
 		case TapNoteType_Tap:
-		case TapNoteType_HoldTail:
 		case TapNoteType_Mine:
 		case TapNoteType_Lift:
 		case TapNoteType_AutoKeysound:
@@ -589,7 +616,9 @@ Player::Load()
 	}
 
 	if (m_pPlayerStageStats != nullptr) {
-		m_pPlayerStageStats->m_fTimingScale = GetTimingWindowScale();
+		m_pPlayerStageStats->m_fTimingScale = m_fTimingWindowScale;
+		m_pPlayerStageStats->m_fOsuOD = m_fOsuOD;
+		m_pPlayerStageStats->m_bHardRock = PREFSMAN->m_bHardRock;
 	}
 
 	/* Apply transforms. */
@@ -1132,7 +1161,7 @@ Player::UpdateHoldNotes(int iSongRow,
 		// That interacts badly with !IMMEDIATE_HOLD_LET_GO,
 		// causing ALL holds to be judged HNS_Held whether they were or not.
 		if (!IMMEDIATE_HOLD_LET_GO ||
-			(iStartRow + trtn.pTN->iDuration) > iSongRow) {
+			(m_Timing->WhereUAtBro(iStartRow + trtn.pTN->iDuration)) + GetWindowSeconds(TW_W5) * 1.5f > m_Timing->WhereUAtBro(iSongRow)) {
 			const auto iTrack = trtn.iTrack;
 
 			if (m_pPlayerState->m_PlayerController != PC_HUMAN) {
@@ -1163,7 +1192,8 @@ Player::UpdateHoldNotes(int iSongRow,
 		for (auto& trtn : vTN) {
 			auto iEndRow = iStartRow + trtn.pTN->iDuration;
 
-			trtn.pTN->HoldResult.iLastHeldRow = min(iSongRow, iEndRow);
+			//trtn.pTN->HoldResult.iLastHeldRow = min(iSongRow, iEndRow);
+			trtn.pTN->HoldResult.iLastHeldRow = iSongRow;
 		}
 	}
 
@@ -1182,8 +1212,7 @@ Player::UpdateHoldNotes(int iSongRow,
 					fLife = 1;
 				} else {
 					const auto window = m_bTickHolds ? TW_Checkpoint : TW_Hold;
-					fLife -= fDeltaTime / GetWindowSeconds(window);
-					fLife = max(0.F, fLife);
+					fLife = 0.f;
 				}
 				break;
 			case TapNoteSubType_Roll:
@@ -1233,7 +1262,7 @@ Player::UpdateHoldNotes(int iSongRow,
 	}
 
 	// score hold notes that have passed
-	if (iSongRow >= iMaxEndRow && bHeadJudged) {
+	if (m_Timing->WhereUAtBro(iSongRow) >= m_Timing->WhereUAtBro(iMaxEndRow) + GetWindowSeconds(TW_W5) * 1.5f && bHeadJudged) {
 		auto bLetGoOfHoldNote = false;
 
 		/* Score rolls that end with fLife == 0 as LetGo, even if
@@ -1326,12 +1355,56 @@ Player::UpdateHoldNotes(int iSongRow,
 		}
 	}
 
-	if ((hns == HNS_LetGo) && COMBO_BREAK_ON_IMMEDIATE_HOLD_LET_GO) {
+	/**if ((hns == HNS_LetGo) && COMBO_BREAK_ON_IMMEDIATE_HOLD_LET_GO) {
 		IncrementMissCombo();
-	}
+		vTN[0].pTN->result.tns = TNS_W5;
+		auto& tn = *vTN[0].pTN;
+		SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+	}**/
+	auto& tn = *vTN[0].pTN;
+	if (hns == HNS_LetGo || hns == HNS_Held)
+		{
+			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
+			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
+			fStepBeat = NoteRowToBeat(iMaxEndRow);
+			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
+			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
+			
+
+			tn.HoldResult.hns = HNS_Held;
+
+			if (fMaxEndSeconds - m_Timing->WhereUAtBro(iStartRow) <= 0.1 ) // dont judge release if LN length is <= 100ms
+			{
+				SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
+				HandleHoldScore(tn);
+				return;
+			}
+
+			if (offset <= GetWindowSeconds(TW_W1) * 1.5f) {
+				IncrementCombo();
+				tn.result.tns = TNS_W1;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W2) * 1.5f) {
+				IncrementCombo();
+				tn.result.tns = TNS_W2;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W3) * 1.5f) {
+				IncrementCombo();
+				tn.result.tns = TNS_W3;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else if (offset <= GetWindowSeconds(TW_W4) * 1.5f) {
+				IncrementCombo();
+				tn.result.tns = TNS_W4;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
+			} else {
+				IncrementMissCombo();
+				tn.result.tns = TNS_W5;
+				tn.HoldResult.hns = HNS_LetGo;
+				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
+			}
+		}
 
 	if (hns != HNS_None) {
-		auto& tn = *vTN[0].pTN;
 		SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
 		HandleHoldScore(tn);
 	}
@@ -1662,12 +1735,7 @@ Player::GetClosestNote(int col,
 		}
 	}
 
-	/* Figure out which row is closer. */
-	if (fabsf(fNoteTime - fNextTime) > fabsf(fNoteTime - fPrevTime)) {
-		return iPrevIndex;
-	}
-
-	return iNextIndex;
+	return iPrevIndex;
 }
 
 auto
@@ -2132,9 +2200,11 @@ Player::Step(int col,
 									   GetWindowSeconds(TW_W4)) {
 								score = TNS_W4;
 							} else if (fSecondsFromExact <=
-									   max(GetWindowSeconds(TW_W5),
-										   MISS_WINDOW_BEGIN_SEC)) {
+									   GetWindowSeconds(TW_W5)) {
 								score = TNS_W5;
+							} else if (fSecondsFromExact <=
+								       GetWindowSeconds(TW_Miss)) {
+									score = TNS_Miss;
 							}
 						}
 						break;
@@ -2935,22 +3005,14 @@ Player::HandleHoldScore(const TapNote& tn) const
 auto
 Player::GetMaxStepDistanceSeconds() -> float
 {
-	// The former behavior of this did not follow capped 180ms window logic.
-	// The result is that on higher judges, the late window was too small.
-	// Setting this hard to .18 x rate brings it back into line.
-	// (On that note, this should only be used in the context of music
-	// timing, because at a 3x rate this would expand by 3x correctly)
-	float fMax = MISS_WINDOW_BEGIN_SEC;
-	/*
 	float fMax = 0;
 	fMax = max(fMax, GetWindowSeconds(TW_W5));
 	fMax = max(fMax, GetWindowSeconds(TW_W4));
 	fMax = max(fMax, GetWindowSeconds(TW_W3));
 	fMax = max(fMax, GetWindowSeconds(TW_W2));
 	fMax = max(fMax, GetWindowSeconds(TW_W1));
-	*/
 	const auto f = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * fMax;
-	return f;
+	return f + m_fMaxInputLatencySeconds;
 }
 
 void
@@ -3003,14 +3065,14 @@ Player::SetMineJudgment(TapNoteScore tns, int iTrack, int iRow)
 
 		// Ms scoring implemenation - Mina
 		if (tns == TNS_HitMine) {
-			curwifescore += wife3_mine_hit_weight;
+			iActual += 0.f;
 		}
 
 		if (m_pPlayerStageStats != nullptr) {
-			if (maxwifescore == 0.F) {
-				msg.SetParam("WifePercent", 0);
+			if (iPossible == 0.F) {
+				//msg.SetParam("WifePercent", 0);
 			} else {
-				msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
+				//msg.SetParam("WifePercent", 100 * iActual / iPossible);
 			}
 
 			msg.SetParam("CurWifeScore", curwifescore);
@@ -3033,7 +3095,7 @@ Player::SetMineJudgment(TapNoteScore tns, int iTrack, int iRow)
 			if (m_pPlayerState->m_PlayerController == PC_HUMAN ||
 				m_pPlayerState->m_PlayerController == PC_REPLAY) {
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			} else {
@@ -3096,15 +3158,42 @@ Player::SetJudgment(int iRow,
 		// misses, multiply
 		// by 1000 for
 		// convenience - Mina
-
+		
 		if (m_pPlayerStageStats != nullptr) {
-			if (tns == TNS_Miss) {
-				curwifescore += wife3_miss_weight;
-			} else {
-				curwifescore +=
-				  wife3(tn.result.fTapNoteOffset, GetTimingWindowScale());
+			m_pPlayerStageStats->m_iTapNoteScores[tns]++;
+
+			if (tns != TNS_Miss) {
+				if (!tns || tns == TNS_None || tns == TapNoteScore_Invalid)
+				{
+					curwifescore += osuOD8(tn.result.tns);
+					#ifdef LOG_SCORE_DATA
+					judgmentCounter[tn.result.tns]++;
+					#endif
+				}
+				else
+				{
+					curwifescore += osuOD8(tns);
+					#ifdef LOG_SCORE_DATA
+					judgmentCounter[tns]++;
+					#endif
+				}
 			}
-			maxwifescore += 2;
+			#ifdef LOG_SCORE_DATA
+			else {
+				judgmentCounter[TNS_Miss]++;
+			}
+			#endif
+			
+			if (tns != TNS_HitMine && tns != TNS_AvoidMine && tns != TNS_CheckpointHit && tns != TNS_CheckpointMiss)
+				maxwifescore += 300.f;
+
+			#ifdef LOG_SCORE_DATA
+			counterSetJudgment++;
+			Locator::getLogger()->info("  SetJudgment called {} times, max/300 {}, cur {}, max {}, perc {}, 320 {}, 300 {}, 200 {}, 100 {}, 50 {}, 0 {}", 
+			counterSetJudgment, maxwifescore / 300, curwifescore, maxwifescore, curwifescore / maxwifescore, 
+			judgmentCounter[9], judgmentCounter[8], judgmentCounter[7], judgmentCounter[6], judgmentCounter[5], judgmentCounter[4]);
+			#endif
+			
 
 			msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
 			msg.SetParam("CurWifeScore", curwifescore);
@@ -3129,11 +3218,15 @@ Player::SetJudgment(int iRow,
 			if (m_pPlayerState->m_PlayerController == PC_HUMAN ||
 				m_pPlayerState->m_PlayerController == PC_REPLAY) {
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			} else {
-				curwifescore -= 666.F; // hail satan
+				//curwifescore -= 666.F; // hail satan
+				m_pPlayerStageStats->m_fWifeScore =
+				  curwifescore / maxwifescore;
+				m_pPlayerStageStats->CurWifeScore = curwifescore;
+				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			}
 
 #endif
@@ -3217,10 +3310,10 @@ Player::SetHoldJudgment(TapNote& tn, int iTrack, int iRow)
 			  m_pPlayerStageStats->m_iHoldNoteScores[tn.HoldResult.hns] + 1);
 
 			// Ms scoring implemenation - Mina
-			if (tn.HoldResult.hns == HNS_LetGo ||
+			/**if (tn.HoldResult.hns == HNS_LetGo ||
 				tn.HoldResult.hns == HNS_Missed) {
 				curwifescore += wife3_hold_drop_weight;
-			}
+			}**/
 
 			msg.SetParam("WifePercent", 100 * curwifescore / maxwifescore);
 			msg.SetParam("CurWifeScore", curwifescore);
@@ -3242,7 +3335,7 @@ Player::SetHoldJudgment(TapNote& tn, int iTrack, int iRow)
 			if (m_pPlayerState->m_PlayerController == PC_HUMAN ||
 				m_pPlayerState->m_PlayerController == PC_REPLAY) {
 				m_pPlayerStageStats->m_fWifeScore =
-				  curwifescore / totalwifescore;
+				  curwifescore / maxwifescore;
 				m_pPlayerStageStats->CurWifeScore = curwifescore;
 				m_pPlayerStageStats->MaxWifeScore = maxwifescore;
 			}

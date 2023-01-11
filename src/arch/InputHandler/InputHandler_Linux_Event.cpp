@@ -458,9 +458,9 @@ InputHandler_Linux_Event::InputThread()
 											 // or if more than 0.5
 					} else {
 						ButtonPressed(DeviceInput(
-						  g_apEventDevices[i]->m_Dev, neg, max(-l, 0.F), now));
+						  g_apEventDevices[i]->m_Dev, neg, max(-l, 0.0f), now));
 						ButtonPressed(DeviceInput(
-						  g_apEventDevices[i]->m_Dev, pos, max(+l, 0.F), now));
+						  g_apEventDevices[i]->m_Dev, pos, max(+l, 0.0f), now));
 					}
 					break;
 				}

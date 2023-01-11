@@ -57,6 +57,7 @@ local translated_info = {
 	TapsHit = THEME:GetString("GeneralInfo", "ProfileTapsHit"),
 	Playtime = THEME:GetString("GeneralInfo", "ProfilePlaytime"),
 	Judge = THEME:GetString("GeneralInfo", "ProfileJudge"),
+	HardRock = THEME:GetString("GeneralInfo", "ProfileHardRock"),
 	RefreshSongs = THEME:GetString("GeneralInfo", "DifferentialReloadTrigger"),
 	SongsLoaded = THEME:GetString("GeneralInfo", "ProfileSongsLoaded"),
 	SessionTime = THEME:GetString("GeneralInfo", "SessionTime")
@@ -409,7 +410,12 @@ t[#t + 1] = Def.ActorFrame {
 		SetCommand = function(self)
 			local online = IsNetSMOnline() and IsSMOnlineLoggedIn() and NSMAN:IsETTP()
 			self:y(AvatarY + 41 - (online and 18 or 0))
-			self:settextf("%s: %s", translated_info["Judge"], GetTimingDifficulty())
+			if GetHardRock() == false then
+				self:settextf("%s%s", translated_info["Judge"], GetTimingDifficulty())
+			end
+			if GetHardRock() == true then
+				self:settextf("%s%s%s", translated_info["Judge"], GetTimingDifficulty(), " +HR")
+			end
 		end
 	},
 	UIElements.TextToolTip(1, 1, "Common Normal") .. {

@@ -43,6 +43,7 @@ DBProfile::LoadDBFromDir(const std::string& dir)
 		//	return ProfileLoadResult_FailedTampered;
 		LoadFavourites(db);
 		LoadPermaMirrors(db);
+		LoadPermaNoPitches(db);
 		LoadScoreGoals(db);
 		LoadPlayLists(db);
 		LoadPlayerScores(db);
@@ -418,6 +419,19 @@ DBProfile::LoadPermaMirrors(SQLite::Database* db)
 	SONGMAN->SetPermaMirroredStatus(loadingProfile->PermaMirrorCharts);
 }
 void
+DBProfile::LoadPermaNoPitches(SQLite::Database* db)
+{
+	SQLite::Statement query(
+	  *db,
+	  "SELECT chartkeys.chartkey FROM permanopitches INNER "
+	  "JOIN chartkeys ON permanopitches.chartkeyid = chartkeys.id");
+	while (query.executeStep()) {
+		const char* key = query.getColumn(0);
+		loadingProfile->PermaNoPitchesCharts.emplace(key);
+	}
+	SONGMAN->SetPermaNoPitchedStatus(loadingProfile->PermaNoPitchesCharts);
+}
+void
 DBProfile::LoadScoreGoals(SQLite::Database* db)
 {
 	SQLite::Statement query(
@@ -491,6 +505,7 @@ DBProfile::SaveDBToDir(const string& dir,
 			SaveGeneralData(db, profile);
 		SaveFavourites(db, profile);
 		SavePermaMirrors(db, profile);
+		SavePermaNoPitches(db, profile);
 		SaveScoreGoals(db, profile);
 		// Make sure playlists are loaded after playerscores
 		SavePlayerScores(db, profile, mode);
@@ -504,6 +519,8 @@ DBProfile::SaveDBToDir(const string& dir,
 				 "ON favourites(chartkeyid, id)");
 		db->exec("CREATE INDEX IF NOT EXISTS idx_permamirrors "
 				 "ON permamirrors(chartkeyid, id)");
+		db->exec("CREATE INDEX IF NOT EXISTS idx_permanopitches "
+				 "ON permanopitches(chartkeyid, id)");
 		db->exec("CREATE INDEX IF NOT EXISTS idx_playlists "
 				 "ON playlists(id, name)");
 		db->exec("CREATE INDEX IF NOT EXISTS  idx_chartplaylists "
@@ -660,6 +677,23 @@ DBProfile::SavePermaMirrors(SQLite::Database* db, const Profile* profile)
 		for (auto& it : profile->PermaMirrorCharts) {
 			const auto chID = FindOrCreateChartKey(db, it);
 			db->exec("INSERT INTO permamirrors VALUES (NULL, " +
+					 std::to_string(chID) + ")");
+		}
+	}
+}
+void
+DBProfile::SavePermaNoPitches(SQLite::Database* db, const Profile* profile)
+{
+
+	db->exec("DROP TABLE IF EXISTS permanopitches");
+	db->exec("CREATE TABLE permanopitches (id INTEGER PRIMARY KEY, chartkeyid "
+			 "INTEGER, CONSTRAINT fk_chartkeyid FOREIGN KEY (chartkeyid) "
+			 "REFERENCES chartkeys(id))");
+
+	if (!profile->PermaNoPitchesCharts.empty()) {
+		for (auto& it : profile->PermaNoPitchesCharts) {
+			const auto chID = FindOrCreateChartKey(db, it);
+			db->exec("INSERT INTO permanopitches VALUES (NULL, " +
 					 std::to_string(chID) + ")");
 		}
 	}
