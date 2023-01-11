@@ -558,7 +558,7 @@ t[#t + 1] = Def.ActorFrame {
 					self:settext("OD" .. od):diffuse(byGrade(score:GetWifeGrade()))
 				end
 				if hr == 1 then
-					self:settext("OD" .. od .. "+HR"):diffuse(byGrade(score:GetWifeGrade()))
+					self:settext("OD" .. od .. "+ HR"):diffuse(byGrade(score:GetWifeGrade()))
 				end
 			else
 				self:settext("")
@@ -763,7 +763,6 @@ t[#t + 1] =LoadFont("Common Normal") .. {
 	end
 }
 
-local show = false
 -- cdtitle
 t[#t + 1] = UIElements.SpriteButton(1, 1, nil) .. {
 	InitCommand = function(self)
@@ -772,26 +771,6 @@ t[#t + 1] = UIElements.SpriteButton(1, 1, nil) .. {
 	end,
 	CurrentStyleChangedMessageCommand = function(self)
 		self:playcommand("MortyFarts")
-	end,
-	BeginCommand = function(self)
-		SCREENMAN:GetTopScreen():AddInputCallback(function(event)
-
-			if(isOver(self) and event.type == "InputEventType_Release") then
-				if event.DeviceInput.button == "DeviceButton_left mouse button" then
-					show = not show
-			  end
-			if show == true then
-				local auth = song:GetOrTryAtLeastToGetSimfileAuthor()
-				TOOLTIP:SetText(auth)
-				TOOLTIP:Show()
-		  end
-			if show == false then
-				TOOLTIP:Hide()
-		  end
-
-			end
-
-		end)
 	end,
 	MortyFartsCommand = function(self)
 		self:finishtweening()

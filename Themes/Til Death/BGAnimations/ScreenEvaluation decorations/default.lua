@@ -1,12 +1,8 @@
 local t = Def.ActorFrame {}
 local inMulti = Var("LoadingScreen") == "ScreenNetEvaluation"
 
-t[#t + 1] = LoadActor(THEME:GetPathB('', '_shared background/snow.lua'))
-
-local scoreType = themeConfig:get_data().global.DefaultScoreType
-
-if GAMESTATE:GetNumPlayersEnabled() == 1 and themeConfig:get_data().eval.ScoreBoardEnabled then
-	if Var("LoadingScreen") == "ScreenNetEvaluation" then
+if GAMESTATE:GetNumPlayersEnabled() == 1 then
+	if inMulti then
 		t[#t + 1] = LoadActor("MPscoreboard")
 	else
 		t[#t + 1] = LoadActor("scoreboard")
@@ -53,104 +49,9 @@ local frameX = 20
 local frameY = 140
 local frameWidth = SCREEN_CENTER_X - 120
 
-t[#t + 1] = LoadFont("Common Large") .. {
-	InitCommand = function(self)
-		self:xy(SCREEN_CENTER_X, capWideScale(139, 165)):zoom(0.25):maxwidth(180 / 0.25)
-	end,
-	BeginCommand = function(self)
-		self:queuecommand("Set")
-	end,
-	SetCommand = function(self)
-		if GAMESTATE:IsCourseMode() then
-			self:settext(GAMESTATE:GetCurrentCourse():GetScripter())
-		else
-			self:settext(GAMESTATE:GetCurrentSong():GetDisplayArtist())
-		end
-	end
-}
-
--- Rate String
-t[#t + 1] = LoadFont("Common Large") .. {
-	InitCommand = function(self)
-		self:xy(SCREEN_CENTER_X, capWideScale(154, 180)):zoom(0.25):halign(0.5)
-		self:queuecommand("Set")
-	end,
-	ScoreChangedMessageCommand = function(self)
-		self:queuecommand("Set")
-	end,
-	SetCommand = function(self)
-		local top = SCREENMAN:GetTopScreen()
-		local rate
-		if top:GetName() == "ScreenNetEvaluation" then
-			rate = score:GetMusicRate()
-		else
-			rate = top:GetReplayRate()
-			if not rate then rate = getCurRateValue() end
-		end
-		rate = notShit.round(rate,3)
-		local ratestr = getRateString(rate)
-		if ratestr == "1x" then
-			self:settext("")
-		else
-			self:settext(ratestr)
-		end
-	end
-}
-
--- lifegraph
-local function GraphDisplay(pn)
-	local t = Def.ActorFrame {
-		Def.GraphDisplay {
-			InitCommand = function(self)
-				self:Load("GraphDisplay")
-			end,
-			BeginCommand = function(self)
-				local ss = SCREENMAN:GetTopScreen():GetStageStats()
-				self:Set(ss, ss:GetPlayerStageStats())
-				self:diffusealpha(0.7)
-				self:GetChild("Line"):diffusealpha(0)
-				self:zoom(0.8)
-				self:xy(590, 180)
-			end,
-			ScoreChangedMessageCommand = function(self)
-				if score and judge then
-					self:playcommand("RecalculateGraphs", {judge=judge})
-				end
-			end,
-			RecalculateGraphsMessageCommand = function(self, params)
-				-- called by the end of a codemessagecommand somewhere else
-				if not tso[params.judge] then return end
-				local success = SCREENMAN:GetTopScreen():SetPlayerStageStatsFromReplayData(SCREENMAN:GetTopScreen():GetStageStats():GetPlayerStageStats(), tso[params.judge], score)
-				if not success then return end
-				self:playcommand("Begin")
-				MESSAGEMAN:Broadcast("SetComboGraph")
-			end
-		}
-	}
-	return t
-end
-
-local function ComboGraph(pn)
-	local t = Def.ActorFrame {
-		Def.ComboGraph {
-			InitCommand = function(self)
-				self:Load("ComboGraph" .. ToEnumShortString(pn))
-			end,
-			BeginCommand = function(self)
-				local ss = SCREENMAN:GetTopScreen():GetStageStats()
-				self:Set(ss, ss:GetPlayerStageStats())
-				self:zoom(0.8)
-				self:xy(590, 170)
-			end,
-			SetComboGraphMessageCommand = function(self)
-				self:Clear()
-				self:Load("ComboGraph" .. ToEnumShortString(pn))
-				self:playcommand("Begin")
-			end
-		}
-	}
-	return t
-end
+-- dont default to using custom windows and dont persist that state
+-- custom windows are meant to be used as a thing you occasionally check, not the primary way to play the game
+local usingCustomWindows = false
 
 --ScoreBoard
 local judges = {
@@ -355,310 +256,6 @@ local function scoreBoard(pn, position)
 			MESSAGEMAN:Broadcast("ScoreChanged")
 		end,
 
-	t[#t + 1] = LoadFont("Common Large") .. {
-		InitCommand = function(self)
-			self:xy(frameX + 3, frameY + 32):zoom(0.5):halign(0):valign(0):maxwidth(200)
-		end,
-		BeginCommand = function(self)
-			self:queuecommand("Set")
-		end,
-		ScoreChangedMessageCommand = function(self)
-			self:queuecommand("Set")
-		end,
-		SetCommand = function(self)
-			local top = SCREENMAN:GetTopScreen()
-			local rate
-			if top:GetName() == "ScreenNetEvaluation" then
-				rate = score:GetMusicRate()
-			else
-				rate = top:GetReplayRate()
-				if not rate then rate = getCurRateValue() end
-			end
-			rate = notShit.round(rate,3)
-			local meter = GAMESTATE:GetCurrentSteps():GetMSD(rate, 1)
-			if meter < 10 then
-				self:settextf("%4.2f", meter)
-			else
-				self:settextf("%5.2f", meter)
-			end
-			self:diffuse(byMSD(meter))
-		end
-	}
-	t[#t + 1] = LoadFont("Common Large") .. {
-		InitCommand = function(self)
-			self:xy(frameWidth + frameX - 3, frameY + 32):zoom(0.5):halign(1):valign(0):maxwidth(200)
-		end,
-		BeginCommand = function(self)
-			self:queuecommand("Set")
-		end,
-		ScoreChangedMessageCommand = function(self)
-			self:queuecommand("Set")
-		end,
-		SetCommand = function(self)
-			local meter = score:GetSkillsetSSR("Overall")
-			self:settextf("%5.2f", meter)
-			self:diffuse(byMSD(meter))
-		end
-	}
-	t[#t + 1] = LoadFont("Common Large") .. {
-		InitCommand = function(self)
-			self:xy(frameWidth + frameX - 3, frameY + 7):zoom(0.5):halign(1):valign(0):maxwidth(200)
-		end,
-		BeginCommand = function(self)
-			self:queuecommand("Set")
-		end,
-		SetCommand = function(self)
-			local steps = GAMESTATE:GetCurrentSteps()
-			local diff = getDifficulty(steps:GetDifficulty())
-			self:settext(getShortDifficulty(diff))
-			self:diffuse(getDifficultyColor(GetCustomDifficulty(steps:GetStepsType(), steps:GetDifficulty())))
-		end
-	}
-		-- osu shit
-
-		local window = 1
-		local show = true
-
-		t[#t + 1] =
-		Def.ActorFrame {
-			InitCommand = function(self)
-			self:SetUpdateFunction(function(self)
-				self:GetChild("OsuManiaAccuracyBackground"):queuecommand("Highlight")
-			end)
-		end,
-		Def.Quad {
-			Name = "OsuHoverInformationBackground",
-			InitCommand = function(self)
-				self:xy(frameX +5, frameY-59):halign(0.5):valign(0.5):diffuse(color(".1,.1,.1,.45"))
-				self:visible(false)
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuPAText",
-			InitCommand = function(self)
-				self:halign(0):valign(0):y(frameY-23.5):zoom(0.45)
-				self:visible(false)
-				self:diffuse(byJudgment(judges[2]))
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuPANumber",
-			InitCommand = function(self)
-				self:halign(0):valign(0):y(frameY-23.5):zoom(0.45)
-				self:visible(false)
-				self:diffuse(byJudgment(judges[2]))
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuMAText",
-			InitCommand = function(self)
-				self:halign(0):valign(0):y(frameY-23.5):zoom(0.45)
-				self:visible(false)
-				self:diffuse(byJudgment(judges[1]))
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuMANumber",
-			InitCommand = function(self)
-				self:halign(0):valign(0):y(frameY-23.5):zoom(0.45)
-				self:visible(false)
-				self:diffuse(byJudgment(judges[1]))
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuGTMText",
-			InitCommand = function(self)
-				self:halign(0):valign(0):y(frameY-23.5):zoom(0.45)
-				self:visible(false)
-				self:diffuse(byJudgment(judges[3]))
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuGTMNumber",
-			InitCommand = function(self)
-				self:halign(0):valign(0):y(frameY-23.5):zoom(0.45)
-				self:visible(false)
-				self:diffuse(byJudgment(judges[3]))
-			end
-		},
-		LoadFont("Common Normal") ..
-		{
-			Name = "OsuJudgmentText",
-			InitCommand = function(self)
-				self:halign(0.5):valign(0.5):y(frameY-58):zoom(0.45)
-				self:visible(false)
-			end
-		},
-		Def.Quad {
-			Name = "OsuManiaAccuracyBackground",
-			InitCommand = function(self)
-				self:xy(frameX - 5, capWideScale(frameY, frameY-11)):zoomto(frameWidth -82.5, 16):halign(0):valign(0):diffuse(getMainColor("tabs"))
-			end,
-			HighlightCommand = function(self)
-
-				local background = self:GetParent():GetChild("OsuHoverInformationBackground")
-				local text = self:GetParent():GetChild("OsuJudgmentText")
-
-				local paText = self:GetParent():GetChild("OsuPAText")
-				local paNumber = self:GetParent():GetChild("OsuPANumber")
-
-				local maText = self:GetParent():GetChild("OsuMAText")
-				local maNumber = self:GetParent():GetChild("OsuMANumber")
-
-				local gtmText = self:GetParent():GetChild("OsuGTMText")
-				local gtmNumber = self:GetParent():GetChild("OsuGTMNumber")
-
-				if isOver(self) and show then
-					background:visible(false)
-					text:visible(false)
-					paText:visible(false)
-					paNumber:visible(false)
-					maText:visible(false)
-					maNumber:visible(false)
-					gtmText:visible(false)
-					gtmNumber:visible(false)
-
-					local x = INPUTFILTER:GetMouseX() - self:GetParent():GetX()
-
-					background:zoomto(text:GetZoomedWidth() + 4, text:GetZoomedHeight() + 6)
-					background:x(x)
-					text:x(x)
-
-
-					local customWindows = timingWindowConfig:get_data().customWindows
-					local customWindow = timingWindowConfig:get_data()[customWindows[window]]
-
-					local marv = getRescoredCustomJudge(dvt, customWindow.judgeWindows, 1)
-					local perfects = getRescoredCustomJudge(dvt, customWindow.judgeWindows, 2)
-					local greats = getRescoredCustomJudge(dvt, customWindow.judgeWindows, 3)
-					local goods = getRescoredCustomJudge(dvt, customWindow.judgeWindows, 4)
-					local bads = getRescoredCustomJudge(dvt, customWindow.judgeWindows, 5)
-					local misses = getRescoredCustomJudge(dvt, customWindow.judgeWindows, 6)
-
-					local ma = marv / perfects
-					local pa = perfects / greats
-					local gtm = greats / misses
-
-					maText:settext("MA")
-					maNumber:settextf("%.1f:1", ma)
-
-					paText:settextf("PA")
-					paNumber:settextf("%.1f:1", pa)
-
-					gtmText:settextf("GTM")
-					gtmNumber:settextf("%.1f:1", gtm)
-
-
-					maText:x(x- (text:GetZoomedWidth() / 2))
-					maNumber:x(x- (text:GetZoomedWidth() / 2) + 29)
-
-					paText:xy(x- (text:GetZoomedWidth() / 2), maText:GetY() - 10)
-					paNumber:xy(x- (text:GetZoomedWidth() / 2) + 29, maText:GetY() - 10)
-
-					gtmText:xy(x- (text:GetZoomedWidth() / 2), maText:GetY() - 20)
-					gtmNumber:xy(x- (text:GetZoomedWidth() / 2) + 29, maText:GetY() - 20)
-
-
-
-					text:settextf("%s (Judgment information)\nMarvelous: %s\nPerfect: %s\nGreat: %s\nGood: %s\nBad: %s\nMiss: %s", customWindow.name, marv, perfects, greats, goods, bads, misses)
-
-				else
-					background:visible(false)
-					text:visible(false)
-					paText:visible(false)
-					paNumber:visible(false)
-					maText:visible(false)
-					maNumber:visible(false)
-					gtmText:visible(false)
-					gtmNumber:visible(false)
-				end
-
-			end
-		}
-	}
-		t[#t + 1] = Def.ActorFrame {
-			LoadFont("Common Large") ..
-			{
-				Name = "OsuManiaAccuracy",
-				InitCommand = function(self)
-					self:xy(frameX + 5, frameY -11):zoom(0.45):halign(0):valign(0):maxwidth(capWideScale(320, 460))
-				end,
-				BeginCommand = function(self)
-					self:queuecommand("Set")
-					SCREENMAN:GetTopScreen():AddInputCallback(function(event)
-
-						if(isOver(self) and event.type == "InputEventType_Release") then
-
-							if event.DeviceInput.button == "DeviceButton_left mouse button" and show then
-
-							window = window + 1
-
-							if window > #timingWindowConfig:get_data().customWindows then
-								window = 1
-							end
-
-						elseif event.DeviceInput.button == "DeviceButton_right mouse button" then
-							show = not show
-						end
-
-							self:queuecommand("Set")
-						end
-
-					end)
-				end,
-				SetCommand = function(self)
-
-				 	local rescoreData = getRescoreElements(score)
-
-				 	rescoreData["dvt"] = dvt
-
-					local customWindows = timingWindowConfig:get_data().customWindows
-					local customWindow = timingWindowConfig:get_data()[customWindows[window]]
-
-					if not show then
-						self:settext("                             ")
-					else
-					local perc = score:GetWifeScore() * 100
-					local od = "osu!mania OD" .. score:GetOsuOD()
-					local hr = score:GetHardRock()
-					if hr == 0 then
-						self:settextf(
-							"%05.2f%% (%s)",
-							perc,
-							od
-						)
-					end
-					if hr == 1 then
-						self:settextf(
-							"%05.2f%% (%s %s)",
-							perc,
-							od,
-							"+HR"
-						)
-					end
-					--local perc = score:GetWifeScore() * 100
-
-					end
-				end
-			}
-		}
-	-- end of osu shit
-	-- Wife percent
-	t[#t + 1] = Def.ActorFrame {
-		InitCommand = function(self)
-			self:SetUpdateFunction(function(self)
-				self:queuecommand("PercentMouseover")
-			end)
-		end,
-		ForceWindowMessageCommand = function(self, params)
-			self:playcommand("Set")
-		end,
 		Def.Quad {
 			Name = "DisplayBG",
 			InitCommand = function(self)
@@ -810,51 +407,17 @@ local function scoreBoard(pn, position)
 			BeginCommand = function(self)
 				self:queuecommand("Set")
 			end,
-			SetCommand = function(self)
-				local wv = score:GetWifeVers()
-				local js = judge ~= 9 and judge or "ustice"
-				local rescoretable = getRescoreElements(score)
-				local rescorepercent = score:GetWifeScore() * 100
-				wv = 3 -- this should really only be applicable if we can convert the score
-				local ws = "Wife" .. wv .. " J"
-				local perc = score:GetWifeScore() * 100
-				self:diffuse(getGradeColor(score:GetWifeGrade()))
-				self:settextf(
-					"%05.2f%% (%s)",
-					perc,
-					customWindow.name
-				)
-			end,
 			ScoreChangedMessageCommand = function(self)
 				self:queuecommand("Set")
 			end,
-			CodeMessageCommand = function(self, params)
-				local rescoretable = getRescoreElements(score)
-				local rescorepercent = 0
-				local ws = "Wife3" .. " J"
-				local perc = score:GetWifeScore() * 100
-				if params.Name == "PrevJudge" and judge > 4 then
-					judge = judge - 1
-					clampJudge()
-					rescorepercent = score:GetWifeScore() * 100
-					self:settextf(
-						"%05.2f%% (%s)",
-						perc,
-						customWindow.name
-					)
-					MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
-				elseif params.Name == "NextJudge" and judge < 9 then
-					judge = judge + 1
-					clampJudge()
-					rescorepercent = score:GetWifeScore() * 100
-					local perc = score:GetWifeScore() * 100
-					local js = judge ~= 9 and judge or "ustice"
-						self:settextf(
-							"%05.2f%% (%s)",
-							perc,
-							customWindow.name
-					)
-					MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
+			SetCommand = function(self)
+				local top = SCREENMAN:GetTopScreen()
+				local rate
+				if top:GetName() == "ScreenNetEvaluation" then
+					rate = score:GetMusicRate()
+				else
+					rate = top:GetReplayRate()
+					if not rate then rate = getCurRateValue() end
 				end
 				rate = notShit.round(rate,3)
 				local meter = GAMESTATE:GetCurrentSteps():GetMSD(rate, 1)
@@ -898,123 +461,10 @@ local function scoreBoard(pn, position)
 				self:queuecommand("Set")
 			end,
 			SetCommand = function(self)
-				local wv = score:GetWifeVers()
-				local js = judge ~= 9 and judge or "ustice"
-				local rescoretable = getRescoreElements(score)
-				local rescorepercent = score:GetWifeScore() * 100
-				wv = 3 -- this should really only be applicable if we can convert the score
-				local ws = "Wife" .. wv .. " J"
-				local perc = score:GetWifeScore() * 100
-				self:diffuse(getGradeColor(score:GetWifeGrade()))
-				self:settextf(
-					"%05.2f%% (%s)",
-					perc,
-					customWindow.name
-				)
-			end,
-			ScoreChangedMessageCommand = function(self)
-				self:queuecommand("Set")
-			end,
-			CodeMessageCommand = function(self, params)
-				local rescoretable = getRescoreElements(score)
-				local rescorepercent = 0
-				local wv = score:GetWifeVers()
-				local ws = "Wife3" .. " J"
-				if params.Name == "PrevJudge" and judge2 > 4 then
-					judge2 = judge2 - 1
-					rescorepercent = score:GetWifeScore() * 100
-					local perc = score:GetWifeScore() * 100
-					self:settextf(
-						"%05.2f%% (%s)",
-						perc,
-						customWindow.name
-					)
-				elseif params.Name == "NextJudge" and judge2 < 9 then
-					judge2 = judge2 + 1
-					rescorepercent = score:GetWifeScore() * 100
-					local js = judge2 ~= 9 and judge2 or "ustice"
-					local perc = score:GetWifeScore() * 100
-					self:settextf(
-					"%05.2f%% (%s)",
-					perc,
-					customWindow.name
-				)
-				end
-				if params.Name == "ResetJudge" then
-					judge2 = GetTimingDifficulty()
-					self:playcommand("Set")
-				end
-			end
-		}
-	}
-
-	t[#t + 1] = LoadFont("Common Normal") .. {
-		InitCommand = function(self)
-			self:xy(frameX + 2.4, frameY + 63):zoom(0.40):halign(0):maxwidth(frameWidth / 0.41)
-		end,
-		BeginCommand = function(self)
-			self:queuecommand("Set")
-		end,
-		SetCommand = function(self)
-			local mstring = GAMESTATE:GetPlayerState():GetPlayerOptionsString("ModsLevel_Current")
-			local ss = SCREENMAN:GetTopScreen():GetStageStats()
-			if not ss:GetLivePlay() then
-				mstring = SCREENMAN:GetTopScreen():GetReplayModifiers()
-			end
-			self:settext(getModifierTranslations(mstring))
-		end,
-		ScoreChangedMessageCommand = function(self)
-			local mstring = score:GetModifiers()
-			self:settext(getModifierTranslations(mstring))
-		end
-	}
-
-	for k, v in ipairs(judges) do
-		t[#t + 1] = Def.Quad {
-			InitCommand = function(self)
-				self:xy(frameX, frameY + 80 + ((k - 1) * 22)):zoomto(frameWidth, 18):halign(0):diffuse(byJudgment(v)):diffusealpha(
-					0.5
-				)
-			end
-		}
-		t[#t + 1] = Def.Quad {
-			InitCommand = function(self)
-				self:xy(frameX, frameY + 80 + ((k - 1) * 22)):zoomto(0, 18):halign(0):diffuse(byJudgment(v)):diffusealpha(0.5)
-			end,
-			BeginCommand = function(self)
-				self:glowshift():effectcolor1(color("1,1,1," .. tostring(score:GetTapNoteScore(v) / totalTaps * 0.4))):effectcolor2(
-					color("1,1,1,0")
-				)
-				if aboutToForceWindowSettings then return end
-				self:sleep(0.2):smooth(1.5):zoomx(frameWidth * score:GetTapNoteScore(v) / totalTaps)
-			end,
-			ForceWindowMessageCommand = function(self, params)
-				local rescoreJudges = getRescoredJudge(dvt, judge, k)
-				self:finishtweening():smooth(0.2):zoomx(frameWidth * rescoreJudges / totalTaps)
-			end,
-			ScoreChangedMessageCommand = function(self)
-				self:zoomx(frameWidth * score:GetTapNoteScore(v) / totalTaps)
-			end,
-			CodeMessageCommand = function(self, params)
-				if params.Name == "PrevJudge" or params.Name == "NextJudge" then
-					local rescoreJudges = getRescoredJudge(dvt, judge, k)
-					self:finishtweening():bounceend(0.2):zoomx(frameWidth * rescoreJudges / totalTaps)
-				end
-				if params.Name == "ResetJudge" then
-					self:finishtweening():bounceend(0.2):zoomx(frameWidth * score:GetTapNoteScore(v) / totalTaps)
-				end
-			end
-		}
-		t[#t + 1] = LoadFont("Common Large") .. {
-			InitCommand = function(self)
-				self:xy(frameX + 10, frameY + 79.3 + ((k - 1) * 22)):zoom(0.25):halign(0)
-			end,
-			BeginCommand = function(self)
-				if aboutToForceWindowSettings then return end
-				self:queuecommand("Set")
-			end,
-			SetCommand = function(self)
-				self:settext(getJudgeStrings(v))
+				local steps = GAMESTATE:GetCurrentSteps()
+				local diff = getDifficulty(steps:GetDifficulty())
+				self:settext(getShortDifficulty(diff))
+				self:diffuse(getDifficultyColor(GetCustomDifficulty(steps:GetStepsType(), steps:GetDifficulty())))
 			end,
 		},
 		Def.ActorFrame {
@@ -1062,17 +512,27 @@ local function scoreBoard(pn, position)
 					self:queuecommand("Set")
 				end,
 				SetCommand = function(self)
-					local wv = score:GetWifeVers()
-					local js = judge ~= 9 and judge or "ustice"
-					local rescoretable = getRescoreElements(score)
-					local rescorepercent = getRescoredWife3Judge(3, judge, rescoretable)
-					wv = 3 -- this should really only be applicable if we can convert the score
-					local ws = "Wife" .. wv .. " J"
+
+					local perc = score:GetWifeScore() * 100
+					local od = "osu!mania OD" .. score:GetOsuOD()
+					local hr = score:GetHardRock()
+
 					self:diffuse(getGradeColor(score:GetWifeGrade()))
-					self:settextf(
-						"%05.2f%% (%s)",
-						notShit.floor(rescorepercent, 2), ws .. js
-					)
+					if hr == 0 then
+						self:settextf(
+							"%05.2f%% (%s)",
+							perc,
+							od
+						)
+					end
+					if hr == 1 then
+						self:settextf(
+							"%05.2f%% (%s %s)",
+							perc,
+							od,
+							"+ HR"
+						)
+					end
 				end,
 				ScoreChangedMessageCommand = function(self)
 					self:queuecommand("Set")
@@ -1082,12 +542,119 @@ local function scoreBoard(pn, position)
 						return
 					end
 
-					local rescoredJudge = getRescoredJudge(dvt, judge, k)
+					local rescoretable = getRescoreElements(score)
+					local rescorepercent = 0
+					local ws = "Wife3" .. " J"
+					if params.Name == "PrevJudge" and judge > 4 then
+						judge = judge - 1
+						clampJudge()
+						rescorepercent = getRescoredWife3Judge(3, judge, rescoretable)
+						self:settextf(
+							"%05.2f%% (%s)", notShit.floor(rescorepercent, 2), ws .. judge
+						)
+						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
+					elseif params.Name == "NextJudge" and judge < 9 then
+						judge = judge + 1
+						clampJudge()
+						rescorepercent = getRescoredWife3Judge(3, judge, rescoretable)
+						local js = judge ~= 9 and judge or "ustice"
+							self:settextf(
+								"%05.2f%% (%s)", notShit.floor(rescorepercent, 2), ws .. js
+						)
+						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
+					end
+					if params.Name == "ResetJudge" then
+						judge = GetTimingDifficulty()
+						clampJudge()
+						self:playcommand("Set")
+						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
+					end
+				end,
+			},
+			LoadFont("Common Large") ..	{-- high precision rollover
+				Name = "LongerText",
+				InitCommand = function(self)
+					self:xy(frameX + 3, frameY + 9)
+					self:zoom(0.45)
+					self:halign(0):valign(0)
+					self:maxwidth(capWideScale(320, 500))
+					self:visible(false)
+				end,
+				BeginCommand = function(self)
+					self:queuecommand("Set")
+				end,
+				SetCommand = function(self)
+
 					local perc = score:GetWifeScore() * 100
-					self:settextf(
-						"%05.2f%% (%s)",
-						perc,
-						customWindow.name)
+					local od = "osu!mania OD" .. score:GetOsuOD()
+					local hr = score:GetHardRock()
+
+					self:diffuse(getGradeColor(score:GetWifeGrade()))
+					if hr == 0 then
+						self:settextf(
+							"%05.4f%% (%s)",
+							perc,
+							od
+						)
+					end
+					if hr == 1 then
+						self:settextf(
+							"%05.4f%% (%s %s)",
+							perc,
+							od,
+							"+HR"
+						)
+					end
+				end,
+				ScoreChangedMessageCommand = function(self)
+					self:queuecommand("Set")
+				end,
+				CodeMessageCommand = function(self, params)
+					if usingCustomWindows then
+						return
+					end
+
+					local rescoretable = getRescoreElements(score)
+					local rescorepercent = 0
+					local wv = score:GetWifeVers()
+					local ws = "Wife3" .. " J"
+					if params.Name == "PrevJudge" and judge2 > 4 then
+						judge2 = judge2 - 1
+						rescorepercent = getRescoredWife3Judge(3, judge2, rescoretable)
+						self:settextf(
+							"%05.4f%% (%s)", notShit.floor(rescorepercent, 4), ws .. judge2
+						)
+					elseif params.Name == "NextJudge" and judge2 < 9 then
+						judge2 = judge2 + 1
+						rescorepercent = getRescoredWife3Judge(3, judge2, rescoretable)
+						local js = judge2 ~= 9 and judge2 or "ustice"
+						self:settextf(
+						"%05.4f%% (%s)", notShit.floor(rescorepercent, 4), ws .. js
+					)
+					end
+					if params.Name == "ResetJudge" then
+						judge2 = GetTimingDifficulty()
+						self:playcommand("Set")
+					end
+				end,
+			},
+		},
+		LoadFont("Common Normal") .. {
+			Name = "ModString",
+			InitCommand = function(self)
+				self:xy(frameX + 2.4, frameY + 63)
+				self:zoom(0.40)
+				self:halign(0)
+				self:maxwidth(frameWidth / 0.41)
+			end,
+			BeginCommand = function(self)
+				self:queuecommand("Set")
+			end,
+			SetCommand = function(self)
+				local mstring = GAMESTATE:GetPlayerState():GetPlayerOptionsString("ModsLevel_Current")
+				local ss = SCREENMAN:GetTopScreen():GetStageStats()
+				if not ss:GetLivePlay() then
+					mstring = SCREENMAN:GetTopScreen():GetReplayModifiers()
 				end
 				self:settext(getModifierTranslations(mstring))
 			end,
@@ -1170,7 +737,7 @@ local function scoreBoard(pn, position)
 				ScoreChangedMessageCommand = function(self)
 					self:zoomx(frameWidth * score:GetTapNoteScore(judgmentName) / totalTaps)
 				end,
-				
+
 				CodeMessageCommand = function(self, params)
 					if usingCustomWindows then
 						return
@@ -1356,17 +923,53 @@ local function scoreBoard(pn, position)
 				perfectTaps = score:GetTapNoteScore(judges[2])
 				greatTaps = score:GetTapNoteScore(judges[3])
 				self:playcommand("Set")
-			end
-		end,
-		ForceWindowMessageCommand = function(self)
-			marvelousTaps = score:GetTapNoteScore(judges[1])
-			perfectTaps = score:GetTapNoteScore(judges[2])
-			greatTaps = score:GetTapNoteScore(judges[3])
-			self:playcommand("Set")
-		end,
-		ScoreChangedMessageCommand = function(self)
-			self:playcommand("ForceWindow")
-		end
+			end,
+			SetCommand = function(self)
+
+				-- Fill in maRatio and paRatio
+				maRatio:settextf("%.1f:1", marvelousTaps / perfectTaps)
+				paRatio:settextf("%.1f:1", perfectTaps / greatTaps)
+
+				-- Align ratioText and maRatio to paRatio (self)
+				maRatioX = paRatio:GetX() - paRatio:GetZoomedWidth() - 10
+				maRatio:xy(maRatioX, paRatio:GetY())
+
+				ratioTextX = maRatioX - maRatio:GetZoomedWidth() - 10
+				ratioText:xy(ratioTextX, paRatio:GetY())
+				if score:GetChordCohesion() == true then
+					maRatio:maxwidth(maRatio:GetZoomedWidth()/0.25)
+					self:maxwidth(self:GetZoomedWidth()/0.25)
+					ratioText:maxwidth(capWideScale(get43size(65), 85)/0.27)
+				end
+			end,
+			CodeMessageCommand = function(self, params)
+				if usingCustomWindows then
+					return
+				end
+
+				if params.Name == "PrevJudge" or params.Name == "NextJudge" then
+						marvelousTaps = getRescoredJudge(dvt, judge, 1)
+						perfectTaps = getRescoredJudge(dvt, judge, 2)
+						greatTaps = getRescoredJudge(dvt, judge, 3)
+					self:playcommand("Set")
+				end
+				if params.Name == "ResetJudge" then
+					marvelousTaps = score:GetTapNoteScore(judges[1])
+					perfectTaps = score:GetTapNoteScore(judges[2])
+					greatTaps = score:GetTapNoteScore(judges[3])
+					self:playcommand("Set")
+				end
+			end,
+			ForceWindowMessageCommand = function(self)
+				marvelousTaps = getRescoredJudge(dvt, judge, 1)
+				perfectTaps = getRescoredJudge(dvt, judge, 2)
+				greatTaps = getRescoredJudge(dvt, judge, 3)
+				self:playcommand("Set")
+			end,
+			ScoreChangedMessageCommand = function(self)
+				self:playcommand("ForceWindow")
+			end,
+		},
 	}
 
 	local radars = {"Holds", "Mines", "Rolls", "Lifts", "Fakes"}
@@ -1647,7 +1250,7 @@ local function scoreBoard(pn, position)
 		t[#t+1] = sl
 	end
 
-	
+
 	-- life graph
 	local function GraphDisplay()
 		return Def.ActorFrame {
@@ -1713,29 +1316,6 @@ if GAMESTATE:IsPlayerEnabled() then
 end
 
 t[#t + 1] = LoadActor("../offsetplot")
-
-local score = SCOREMAN:GetMostRecentScore()
-if not score then
-	score = SCOREMAN:GetTempReplayScore()
-end
--- Discord thingies
-local largeImageTooltip =
-	GetPlayerOrMachineProfile(PLAYER_1):GetDisplayName() ..
-	": " .. string.format("%5.2f", GetPlayerOrMachineProfile(PLAYER_1):GetPlayerRating())
-local detail =
-	GAMESTATE:GetCurrentSong():GetDisplayMainTitle() ..
-	" " .. string.gsub(getCurRateDisplayString(), "Music", "") .. " [" .. GAMESTATE:GetCurrentSong():GetGroupName() .. "]"
-if not STATSMAN:GetCurStageStats():GetLivePlay() then
-	detail = "Replayed: "..detail
-end
--- truncated to 128 characters(discord hard limit)
-detail = #detail < 128 and detail or string.sub(detail, 1, 124) .. "..."
-local state =
-	"MSD: " ..
-	string.format("%05.2f", GAMESTATE:GetCurrentSteps():GetMSD(getCurRateValue(), 1)) ..
-		" - " ..
-			string.format("%05.2f%%", notShit.floor(score:GetWifeScore() * 10000) / 100) ..
-				" " .. THEME:GetString("Grade", ToEnumShortString(score:GetWifeGrade()))
-GAMESTATE:UpdateDiscordPresence(largeImageTooltip, detail, state, 0)
+updateDiscordStatus(true)
 
 return t
