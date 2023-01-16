@@ -316,7 +316,7 @@ BackgroundImpl::Layer::CreateBackground(const Song* pSong,
 		std::vector<std::string> vsPaths, vsThrowAway;
 
 		// Look for BGAnims in the song dir
-		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG)
+		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG == true) {
 			srand(time(0));
 			std::vector <std::string> custombgs;
 			std::string path = "./Themes/Til Death/CustomBG/";
@@ -330,6 +330,7 @@ BackgroundImpl::Layer::CreateBackground(const Song* pSong,
 			if (size == 0) {
 				vsPaths.push_back(THEME->GetPathG("Common", "fallback background"));
 			}
+		}
 		if (sToResolve == SONG_BACKGROUND_FILE && PREFSMAN->m_bCustomBG == false)
 			vsPaths.push_back(
 			  pSong->HasBackground()
