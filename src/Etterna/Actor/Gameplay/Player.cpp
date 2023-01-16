@@ -1362,7 +1362,7 @@ Player::UpdateHoldNotes(int iSongRow,
 		SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
 	}**/
 	auto& tn = *vTN[0].pTN;
-	if (hns == HNS_LetGo || hns == HNS_Held)
+	if ((hns == HNS_LetGo || hns == HNS_Held) && tn.subType != TapNoteSubType_Roll)
 		{
 			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
 			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
