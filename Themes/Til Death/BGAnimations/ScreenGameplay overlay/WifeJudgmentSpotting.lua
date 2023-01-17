@@ -242,7 +242,7 @@ local t =
 		self:playcommand("PracticeModeReset")
 	end,
 	JudgmentMessageCommand = function(self, msg)
-		tDiff = msg.WifeDifferential
+		tDiff = msg.WifeDifferential / 100
 		wifey = Floor(msg.WifePercent * 100) / 100
 		jdgct = msg.Val
 		if msg.Offset ~= nil then
@@ -252,7 +252,7 @@ local t =
 		end
 		if msg.WifePBGoal ~= nil and targetTrackerMode ~= 0 then
 			pbtarget = msg.WifePBGoal
-			tDiff = msg.WifePBDifferential
+			tDiff = msg.WifePBDifferential / 100
 		end
 		jdgCur = msg.Judgment
 		self:playcommand("SpottedOffset")
@@ -1010,7 +1010,7 @@ local loopStartPos
 local loopEndPos
 
 local function handleRegionSetting(positionGiven)
-	-- don't allow a negative region 
+	-- don't allow a negative region
 	-- internally it is limited to -2
 	-- the start delay is 2 seconds, so limit this to 0
 	if positionGiven < 0 then return end
@@ -1106,7 +1106,7 @@ local function duminput(event)
 			end
 		end
 	end
-	
+
 	return false
 end
 
@@ -1290,15 +1290,15 @@ mc = Def.ActorFrame {
 
 		local steps = GAMESTATE:GetCurrentSteps()
 		local loot = steps:GetNPSPerMeasure(1)
-						
+
 		local peak = 0
 		for i = 1, #loot do
 			if loot[i] > peak then
-				
+
 				peak = loot[i]
 			end
 		end
-	
+
 		local m_len = 0
 		local m_spd = 0
 		local m_start = 0
@@ -1307,7 +1307,7 @@ mc = Def.ActorFrame {
 				m_spd = loot[i]
 				m_start = i
 			end
-	
+
 			if math.abs(m_spd - loot[i]) < 2 then
 				m_len = m_len + 1
 				m_spd = (m_spd + loot[i]) / 2
@@ -1325,7 +1325,7 @@ mc = Def.ActorFrame {
 			self:visible(false)
 			settext(self, "")
 
-			if measure == measures[thingy][1] then	
+			if measure == measures[thingy][1] then
 				playcommand(self, "Dootz")
 			end
 		end,
