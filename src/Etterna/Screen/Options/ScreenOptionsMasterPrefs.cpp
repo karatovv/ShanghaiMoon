@@ -747,6 +747,7 @@ InitializeConfOptions()
 
 	// Misc options
 	ADD(ConfOption("FastLoad", MovePref<bool>, "Off", "On"));
+	ADD(ConfOption("DescendingSort", MovePref<bool>, "Off", "On"));
 
 	// Background options
 	ADD(ConfOption("RandomBackgroundMode",

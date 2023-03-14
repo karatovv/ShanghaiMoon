@@ -642,9 +642,16 @@ void
 SongUtil::SortSongPointerArrayByGroupAndMSD(std::vector<Song*>& vpSongsInOut,
 											Skillset ss)
 {
-	sort(vpSongsInOut.begin(),
-		 vpSongsInOut.end(),
-		 CompareSongPointersByGroupAndMSD(ss));
+	if (PREFSMAN->m_bDescendingSort == true) {
+		sort(vpSongsInOut.rbegin(),
+			 vpSongsInOut.rend(),
+			 CompareSongPointersByGroupAndMSD(ss));
+	}
+	else {
+		sort(vpSongsInOut.begin(),
+			 vpSongsInOut.end(),
+			 CompareSongPointersByGroupAndMSD(ss));
+	}
 }
 
 void
