@@ -741,8 +741,8 @@ ScreenGameplay::StartPlayingSong(float fMinTimeToNotes, float fMinTimeToMusic)
 	{
 		const auto fFirstSecond = GAMESTATE->m_pCurSong->GetFirstSecond();
 		auto fStartDelay = fMinTimeToNotes - fFirstSecond;
-		fStartDelay = std::max(fStartDelay, fMinTimeToMusic); // p.m_StartSecond = ((nd.GetFirstBeat() * (td->GetBPMAtRow(nd.GetFirstRow()) / 60.0F)))  * p.m_fSpeed;
-		p.m_StartSecond = (td->GetElapsedTimeFromBeat(nd.GetFirstBeat() - 4))  * p.m_fSpeed;
+		fStartDelay = std::max(fStartDelay, fMinTimeToMusic);
+		p.m_StartSecond = td->GetElapsedTimeFromBeat(nd.GetFirstBeat()) - 4;
 	}
 
 	ASSERT(!m_pSoundMusic->IsPlaying());
