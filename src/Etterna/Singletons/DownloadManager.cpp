@@ -118,7 +118,7 @@ DownloadManager::InstallSmzip(const string& sZipFile)
 	if (!FILEMAN->Mount("zip", sZipFile, TEMP_ZIP_MOUNT_POINT))
 		FAIL_M(static_cast<string>("Failed to mount " + sZipFile).c_str());
 	std::vector<std::string> v_packs;
-	GetDirListing(TEMP_ZIP_MOUNT_POINT + "*", v_packs, true, true);
+	FILEMAN->GetDirListing(TEMP_ZIP_MOUNT_POINT + "*", v_packs, ONLY_DIR, true);
 
 	string doot = TEMP_ZIP_MOUNT_POINT;
 	if (v_packs.size() > 1) {
@@ -414,10 +414,15 @@ enum class RequestResultStatus
 	Done = 0,
 	Failed = 1,
 };
+struct RequestResult
+{
+	RequestResultStatus status;
+	long response_code;
+};
 std::mutex G_MTX_HTTP_REQS;
 std::vector<CURL*> G_HTTP_REQS;
 std::mutex G_MTX_HTTP_RESULT_HANDLES;
-std::vector<std::pair<CURL*, RequestResultStatus>> G_HTTP_RESULT_HANDLES;
+std::vector<std::pair<CURL*, RequestResult>> G_HTTP_RESULT_HANDLES;
 void AddHttpRequestHandle(CURL* handle) {
 	const std::lock_guard<std::mutex> lock(G_MTX_HTTP_REQS);
 	G_HTTP_REQS.push_back(handle);
@@ -425,7 +430,7 @@ void AddHttpRequestHandle(CURL* handle) {
 std::mutex G_MTX_PACK_REQS;
 std::vector<CURL*> G_PACK_REQS;
 std::mutex G_MTX_PACK_RESULT_HANDLES;
-std::vector<std::pair<CURL*, RequestResultStatus>> G_PACK_RESULT_HANDLES;
+std::vector<std::pair<CURL*, RequestResult>> G_PACK_RESULT_HANDLES;
 void
 AddPackDlRequestHandle(CURL* handle)
 {
@@ -445,7 +450,7 @@ DownloadManager::init()
 		int HandlesRunning = 0;
 		std::vector<CURL*> local_http_reqs_tmp;
 		std::vector<CURL*> local_http_reqs;
-		std::vector<std::pair<CURL*, RequestResultStatus>> result_handles;
+		std::vector<std::pair<CURL*, RequestResult>> result_handles;
 		bool handle_count_changed = false;
 		while (true) {
 			if (QUIT_OTHER_THREADS_FLAG.load()) break;
@@ -485,13 +490,16 @@ DownloadManager::init()
 			CURLMsg* msg;
 			int msgs_left;
 			while ((msg = curl_multi_info_read(CurlMHandle, &msgs_left))) {
-				RequestResultStatus rescode =
+				RequestResult res = {};
+				res.status =
 				  msg->data.result != CURLE_PARTIAL_FILE &&
 					  msg->msg == CURLMSG_DONE
 					? RequestResultStatus::Done
 					: RequestResultStatus::Failed;
+				curl_easy_getinfo(
+				  msg->easy_handle, CURLINFO_RESPONSE_CODE, &res.response_code);
 				result_handles.push_back(
-				  std::make_pair(msg->easy_handle, rescode));
+				  std::make_pair(msg->easy_handle, res));
 				curl_multi_remove_handle(CurlMHandle, msg->easy_handle);
 				curl_easy_cleanup(msg->easy_handle);
 			}
@@ -525,7 +533,7 @@ DownloadManager::init()
 		CURLM* CurlMHandle = curl_multi_init();
 		int HandlesRunning = 0;
 		std::vector<CURL*> local_http_reqs;
-		std::vector<std::pair<CURL*, RequestResultStatus>> result_handles;
+		std::vector<std::pair<CURL*, RequestResult>> result_handles;
 		while (true) {
 			if (QUIT_OTHER_THREADS_FLAG.load())
 				break;
@@ -548,14 +556,14 @@ DownloadManager::init()
 			CURLMsg* msg;
 			int msgs_left;
 			while ((msg = curl_multi_info_read(CurlMHandle, &msgs_left))) {
-				RequestResultStatus rescode =
-				  msg->data.result != CURLE_UNSUPPORTED_PROTOCOL &&
-					  msg->msg == CURLMSG_DONE
-					? RequestResultStatus::Done
-					: RequestResultStatus::Failed;
-				result_handles.push_back(std::make_pair(
-					msg->easy_handle,
-					rescode));
+				RequestResult res = {};
+				res.status = msg->data.result != CURLE_UNSUPPORTED_PROTOCOL &&
+								 msg->msg == CURLMSG_DONE
+							   ? RequestResultStatus::Done
+							   : RequestResultStatus::Failed;
+				curl_easy_getinfo(
+				  msg->easy_handle, CURLINFO_RESPONSE_CODE, &res.response_code);
+				result_handles.push_back(std::make_pair(msg->easy_handle, res));
 				curl_multi_remove_handle(CurlMHandle, msg->easy_handle);
 				curl_easy_cleanup(msg->easy_handle);
 			}
@@ -591,19 +599,23 @@ DownloadManager::UpdateHTTP(float fDeltaSeconds)
 	if (HTTPRequests.empty() || gameplay)
 		return;
 
-	static std::vector<std::pair<CURL*, RequestResultStatus>> result_handles;
+	static std::vector<std::pair<CURL*, RequestResult>> result_handles;
 	{
 		const std::lock_guard<std::mutex> lock(G_MTX_HTTP_RESULT_HANDLES);
 		G_HTTP_RESULT_HANDLES.swap(result_handles);
 	}
 	for (auto& pair : result_handles) {
 		CURL* handle = pair.first;
-		RequestResultStatus res = pair.second;
+		RequestResultStatus res = pair.second.status;
 
 		/* Find out which handle this message is about */
 		int idx_to_delete = -1;
 		for (size_t i = 0; i < HTTPRequests.size(); ++i) {
 			if (handle == HTTPRequests[i]->handle) {
+				// The CURL handle is freed by the other thread, for easier debugging set it to null
+				HTTPRequests[i]->handle = nullptr;
+				HTTPRequests[i]->response_code = pair.second.response_code;
+
 				switch (res) {
 					case RequestResultStatus::Done:
 						HTTPRequests[i]->Done(*(HTTPRequests[i]));
@@ -617,7 +629,6 @@ DownloadManager::UpdateHTTP(float fDeltaSeconds)
 						  "Unknown RequestResultStatus (This indicates a bug)");
 				}
 
-				HTTPRequests[i]->handle = nullptr;
 				if (HTTPRequests[i]->form != nullptr)
 					curl_formfree(HTTPRequests[i]->form);
 				HTTPRequests[i]->form = nullptr;
@@ -674,7 +685,7 @@ DownloadManager::UpdatePacks(float fDeltaSeconds)
 	if (downloads.empty())
 		return;
 
-	static std::vector<std::pair<CURL*, RequestResultStatus>> result_handles;
+	static std::vector<std::pair<CURL*, RequestResult>> result_handles;
 	{
 		const std::lock_guard<std::mutex> lock(G_MTX_PACK_RESULT_HANDLES);
 		G_PACK_RESULT_HANDLES.swap(result_handles);
@@ -682,7 +693,7 @@ DownloadManager::UpdatePacks(float fDeltaSeconds)
 	bool finishedADownload = false;
 	for (auto& pair : result_handles) {
 		CURL* handle = pair.first;
-		RequestResultStatus res = pair.second;
+		RequestResultStatus res = pair.second.status;
 
 		/* Find out which handle this message is about */
 		for (auto i = downloads.begin(); i != downloads.end(); i++) {
@@ -938,6 +949,181 @@ DownloadManager::UploadScore(HighScore* hs,
 							 bool load_from_disk)
 {
 
+	if (load_from_disk)
+		hs->LoadReplayData();
+
+	CURL* curlHandle = initCURLHandle(true);
+	string url = serverURL.Get() + "/score";
+	curl_httppost* form = nullptr;
+	curl_httppost* lastPtr = nullptr;
+	SetCURLPOSTScore(curlHandle, form, lastPtr, hs);
+	string replayString;
+	const auto& offsets = hs->GetOffsetVector();
+	const auto& columns = hs->GetTrackVector();
+	const auto& types = hs->GetTapNoteTypeVector();
+	const auto& rows = hs->GetNoteRowVector();
+	if (!offsets.empty()) {
+		replayString = "[";
+		auto steps = SONGMAN->GetStepsByChartkey(hs->GetChartKey());
+		if (steps == nullptr) {
+			Locator::getLogger()->warn(
+			  "Attempted to upload score with no loaded steps "
+			  "(scorekey: \"{}\" chartkey: \"{}\")",
+			  hs->GetScoreKey().c_str(),
+			  hs->GetChartKey().c_str());
+			curl_easy_cleanup(curlHandle);
+			return;
+		}
+		std::vector<float> timestamps =
+		  steps->GetTimingData()->ConvertReplayNoteRowsToTimestamps(
+			rows, hs->GetMusicRate());
+		for (size_t i = 0; i < offsets.size(); i++) {
+			replayString += "[";
+			replayString += to_string(timestamps[i]) + ",";
+			replayString += to_string(1000.f * offsets[i]) + ",";
+			if (hs->HasColumnData()) {
+				replayString += to_string(columns[i]) + ",";
+				replayString += to_string(types[i]) + ",";
+			}
+			replayString += to_string(rows[i]);
+			replayString += "],";
+		}
+		replayString =
+		  replayString.substr(0, replayString.size() - 1); // remove ","
+		replayString += "]";
+		if (load_from_disk)
+			hs->UnloadReplayData();
+	} else {
+		// this should never be true unless we are using the manual forceupload
+		// functions
+		replayString = "[]";
+	}
+	SetCURLFormPostField(
+	  curlHandle, form, lastPtr, "replay_data", replayString);
+	SetCURLURL(curlHandle, url);
+	curl_easy_setopt_log_err(curlHandle, CURLOPT_POST, 1L);
+	curl_easy_setopt_log_err(curlHandle, CURLOPT_HTTPPOST, form);
+	auto done = [hs, callback, load_from_disk](HTTPRequest& req) {
+		Document d;
+		if (d.Parse(req.result.c_str()).HasParseError()) {
+			Locator::getLogger()->error(
+			  "Score upload response json parse error (error: \"{}\" "
+			  "response body: \"{}\")",
+			  rapidjson::GetParseError_En(d.GetParseError()),
+			  req.result.c_str());
+			if (callback)
+				callback();
+			return;
+		}
+		if (d.HasMember("errors")) {
+			auto onStatus =
+			  [hs, load_from_disk, &callback, &req](int status) {
+				  if (status == 22) {
+					  Locator::getLogger()->error(
+						"Score upload response contains error, retrying "
+						"(http status: {} error status: {} response "
+						"body: \"{}\")",
+						req.response_code,
+						status,
+						req.result.c_str());
+					  DLMAN->StartSession(
+						DLMAN->sessionUser,
+						DLMAN->sessionPass,
+						[hs, callback, load_from_disk](bool logged) {
+							if (logged) {
+								DLMAN->UploadScore(
+								  hs, callback, load_from_disk);
+							}
+						});
+					  return true;
+				  } else if (status == 404 || status == 405 || status == 406) {
+					  if (hs->GetWifeVersion() == 3)
+						  hs->AddUploadedServer(wife3_rescore_upload_flag);
+					  hs->AddUploadedServer(serverURL.Get());
+					  hs->forceuploadedthissession = true;
+				  }
+				  // We don't log 406s because those are "not a a pb"
+				  // Which are normal, unless we're using verbose logging
+				  if (status != 406)
+					  Locator::getLogger()->error(
+						"Score upload response contains error "
+						"(http status: {} error status: {} response body: "
+						"\"{}\" score key: \"{}\")",
+						req.response_code,
+						status,
+						req.result.c_str(),
+						hs->GetScoreKey().c_str());
+				  return false;
+			  };
+			if (d["errors"].IsArray()) {
+				for (auto& error : d["errors"].GetArray()) {
+					if (!error["status"].IsInt())
+						continue;
+					int status = error["status"].GetInt();
+					if (onStatus(status))
+						return;
+				}
+			} else if (d["errors"].HasMember("status") &&
+					   d["errors"]["status"].IsInt()) {
+				if (onStatus(d["errors"]["status"].GetInt()))
+					return;
+			} else {
+				Locator::getLogger()->error(
+				  "Score upload response contains error and we failed "
+				  "to recognize it"
+				  "(http status: {} response body: \"{}\")",
+				  req.response_code,
+				  req.result.c_str());
+			}
+			if (callback)
+				callback();
+			return;
+		}
+		if (d.HasMember("data") && d["data"].IsObject() &&
+			d["data"].HasMember("type") && d["data"]["type"].IsString() &&
+			std::strcmp(d["data"]["type"].GetString(), "ssrResults") == 0 &&
+			d["data"].HasMember("attributes") &&
+			d["data"]["attributes"].IsObject() &&
+			d["data"]["attributes"].HasMember("diff") &&
+			d["data"]["attributes"]["diff"].IsObject()) {
+			auto& diffs = d["data"]["attributes"]["diff"];
+			FOREACH_ENUM(Skillset, ss)
+			{
+				auto str = SkillsetToString(ss);
+				if (ss != Skill_Overall && diffs.HasMember(str.c_str()) &&
+					diffs[str.c_str()].IsNumber())
+					(DLMAN->sessionRatings)[ss] +=
+					  diffs[str.c_str()].GetFloat();
+			}
+			if (diffs.HasMember("Rating") && diffs["Rating"].IsNumber())
+				(DLMAN->sessionRatings)[Skill_Overall] +=
+				  diffs["Rating"].GetFloat();
+			if (hs->GetWifeVersion() == 3)
+				hs->AddUploadedServer(wife3_rescore_upload_flag);
+			hs->AddUploadedServer(serverURL.Get());
+			hs->forceuploadedthissession = true;
+			Locator::getLogger()->info("Score upload completed for score {}",
+									   hs->GetScoreKey());
+			// HTTPRunning = response_code;// TODO: Why were we doing this?
+		} else {
+			Locator::getLogger()->error(
+			  "Score upload response malformed json "
+			  "(http status: {} response body: \"{}\")",
+			  req.response_code,
+			  req.result.c_str());
+		}
+		if (callback)
+			callback();
+	};
+	HTTPRequest* req = new HTTPRequest(
+	  curlHandle, done, nullptr, [callback](HTTPRequest& req) {
+			if (callback)
+			  callback();
+	  });
+	SetCURLResultsString(curlHandle, &(req->result));
+	AddHttpRequestHandle(req->handle);
+	HTTPRequests.push_back(req);
+	Locator::getLogger()->info("Finished creating UploadScore request");
 }
 
 // this is for new/live played scores that have replaydata in memory
@@ -1466,13 +1652,10 @@ DownloadManager::RequestChartLeaderBoard(const string& chartkey,
 		std::vector<OnlineScore>& vec = DLMAN->chartLeaderboards[chartkey];
 		vec.clear();
 
-		long response_code;
-		curl_easy_getinfo(req.handle, CURLINFO_RESPONSE_CODE, &response_code);
-
 		// keep track of unranked charts
-		if (response_code == 404)
+		if (req.response_code == 404)
 			DLMAN->unrankedCharts.emplace(chartkey);
-		else if (response_code == 200)
+		else if (req.response_code == 200)
 			DLMAN->unrankedCharts.erase(chartkey);
 
 		if (!d.HasMember("errors") && d.HasMember("data") &&
@@ -1712,7 +1895,7 @@ DownloadManager::RequestChartLeaderBoard(const string& chartkey,
 
 				// 404: Chart not ranked
 				// 401: Invalid login token
-				if (response_code == 404 || response_code == 401) {
+				if (req.response_code == 404 || req.response_code == 401) {
 					lua_pushnil(L);
 					// nil output means unranked to Lua
 				} else {
