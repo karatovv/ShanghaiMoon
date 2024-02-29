@@ -230,23 +230,27 @@ Player::GetWindowSecondsCustomScale(TimingWindow tw, float timingScale) -> float
 		case TW_Mine:
 			return MINE_WINDOW_SEC;
 		case TW_Hold:
-			return 0.25F * timingScale;
+			return 0.25F * GetTimingWindowScale();
 		case TW_Roll:
-			return 0.5F * timingScale;
+			return 0.5F * GetTimingWindowScale();
 		default:
 			break;
 	}
 
 	float fSecs = m_fTimingWindowSeconds[tw];
-	fSecs *= timingScale;
-	fSecs = std::clamp(fSecs, 0.F, MISS_WINDOW_BEGIN_SEC);
+	if (tw != TW_W1 && timingScale != 0.0F) {
+		fSecs -= timingScale * 3 / 1000;
+	}
+
+	if (PREFSMAN->m_bHardRock)
+		fSecs /= 1.4f;
 	return fSecs;
 }
 
 auto
 Player::GetTimingWindowScale() -> float
 {
-	return std::clamp(m_fTimingWindowScale.Get(), 0.001F, 1.F);
+	return m_fOsuOD.Get();
 }
 
 Player::Player(NoteData& nd, bool bVisibleParts)

@@ -89,9 +89,6 @@ ReplayManager::GetTapNoteScoreForReplay(float fNoteOffset, float timingScale)
 
 	const auto fSecondsFromExact = fabsf(fNoteOffset);
 
-	if (fSecondsFromExact >= 1.f)
-		return TNS_Miss;
-
 	if (fSecondsFromExact <=
 		Player::GetWindowSecondsCustomScale(TW_W1, timingScale))
 		return TNS_W1;
@@ -105,9 +102,11 @@ ReplayManager::GetTapNoteScoreForReplay(float fNoteOffset, float timingScale)
 			 Player::GetWindowSecondsCustomScale(TW_W4, timingScale))
 		return TNS_W4;
 	else if (fSecondsFromExact <=
-			 std::max(Player::GetWindowSecondsCustomScale(TW_W5, timingScale),
-					  MISS_WINDOW_BEGIN_SEC))
+			 Player::GetWindowSecondsCustomScale(TW_W5, timingScale))
 		return TNS_W5;
+	else if (fSecondsFromExact <=
+			 Player::GetWindowSecondsCustomScale(TW_Miss, timingScale))
+		return TNS_Miss;
 	return TNS_None;
 }
 
