@@ -432,9 +432,6 @@ Profile::LoadEditableDataFromDir(const std::string& sDir)
 {
 	const auto fn = sDir + EDITABLE_INI;
 
-	// Don't load unreasonably large editable.xml files.
-	auto iBytes = FILEMAN->GetFileSizeInBytes(fn);
-
 	if (!IsAFile(fn))
 		return ProfileLoadResult_FailedNoProfile;
 
@@ -680,7 +677,8 @@ Profile::MakeUniqueFileNameNoExtension(const std::string& sDir,
 	FILEMAN->FlushDirCache(sDir);
 	// Find a file name for the screenshot
 	std::vector<std::string> files;
-	GetDirListing(sDir + sFileNameBeginning + "*", files, false, false);
+	FILEMAN->GetDirListing(
+	  sDir + sFileNameBeginning + "*", files, false, false);
 	sort(files.begin(), files.end());
 
 	auto iIndex = 0;
@@ -804,23 +802,22 @@ class LunaProfile : public Luna<Profile>
 	// TODO: SCOREMAN
 	static int GetMostPopularSong(T* p, lua_State* L)
 	{
-
 		lua_pushnil(L);
 		return 1;
 	}
 	// USE SCOREMAN FOR THIS
+	// TODO: Remove?
 	static int GetSongNumTimesPlayed(T* p, lua_State* L)
 	{
 		ASSERT(!lua_isnil(L, 1));
-		auto* pS = Luna<Song>::check(L, 1);
 		lua_pushnumber(L, 0);
 		return 1;
 	}
 	// USE SCOREMAN FOR THIS
+	// TODO: Remove?
 	static int HasPassedAnyStepsInSong(T* p, lua_State* L)
 	{
 		ASSERT(!lua_isnil(L, 1));
-		auto* pS = Luna<Song>::check(L, 1);
 		lua_pushboolean(L, false);
 		return 1;
 	}

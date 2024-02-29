@@ -31,6 +31,12 @@ local versionNumberLeftGap = 5 / 1920 * SCREEN_WIDTH
 local versionNumberUpperGap = 980 / 1080 * SCREEN_HEIGHT
 local themeVersionUpperGap = 1015 / 1080 * SCREEN_HEIGHT
 
+local translations = {
+    GameName = THEME:GetString("Common", "Etterna"):upper(),
+    UpdateAvailable = THEME:GetString("ScreenTitleMenu", "UpdateAvailable"),
+    By = THEME:GetString("ScreenTitleMenu", "By"),
+}
+
 local nameTextSize = 0.9
 local themenameTextSize = 0.8
 local versionTextSize = 0.5
@@ -80,10 +86,20 @@ t[#t+1] = Def.ActorFrame {
 
     Def.Sprite {
         Name = "LeftBG",
+        Texture = THEME:GetPathG("", "title-solid"),
+        InitCommand = function(self)
+            self:halign(0):valign(0)
+            self:zoomto(gradientwidth, gradientheight)
+            registerActorToColorConfigElement(self, "title", "GradientColor1")
+        end
+    },
+    Def.Sprite {
+        Name = "LeftBGGradient",
         Texture = THEME:GetPathG("", "title-gradient"),
         InitCommand = function(self)
             self:halign(0):valign(0)
             self:zoomto(gradientwidth, gradientheight)
+            registerActorToColorConfigElement(self, "title", "GradientColor2")
         end
     },
     Def.Quad {
@@ -118,16 +134,28 @@ t[#t+1] = Def.ActorFrame {
             self:xy(logoFrameLeftGap, logoFrameUpperGap)
         end,
     
-        UIElements.SpriteButton(100, 1, THEME:GetPathG("", "Logo")) .. {
+        Def.Sprite {
+            Name = "LogoTriangle",
+            Texture = THEME:GetPathG("", "Logo-Triangle"),
+            InitCommand = function(self)
+                self:halign(0):valign(0)
+                self:zoomto(logoW, logoH)
+                registerActorToColorConfigElement(self, "title", "LogoTriangle")
+            end,
+        },
+        UIElements.SpriteButton(100, 1, THEME:GetPathG("", "Logo-E")) .. {
             Name = "Logo",
             InitCommand = function(self)
                 self:halign(0):valign(0)
                 self:zoomto(logoW, logoH)
+                registerActorToColorConfigElement(self, "title", "LogoE")
             end,
             MouseOverCommand = function(self)
+                self:GetParent():GetChild("LogoTriangle"):diffusealpha(buttonHoverAlpha)
                 self:diffusealpha(buttonHoverAlpha)
             end,
             MouseOutCommand = function(self)
+                self:GetParent():GetChild("LogoTriangle"):diffusealpha(1)
                 self:diffusealpha(1)
             end,
             MouseDownCommand = function(self, params)
@@ -181,7 +209,7 @@ t[#t+1] = Def.ActorFrame {
                 self:x(logoNameLeftGap + logoW)
                 self:zoom(nameTextSize)
                 self:maxwidth((separatorxpos - (logoNameLeftGap + logoW) - logoNameLeftGap) / nameTextSize)
-                self:settext("ETTERNA")
+                self:settext(translations["GameName"])
                 self:diffuse(COLORS:getTitleColor("PrimaryText"))
                 self:diffusealpha(1)
             end
@@ -218,7 +246,7 @@ t[#t+1] = Def.ActorFrame {
                 self:xy(vnc:GetX() + vnc:GetZoomedWidth() + bufferspace, versionNumberUpperGap)
                 self:zoom(versionTextSize)
                 self:maxwidth(((gradientwidth - vnc:GetX() - vnc:GetZoomedWidth() - logoFrameLeftGap - separatorthickness) / versionTextSize))
-                self:settextf("- Update Available (%s)", DLMAN:GetLastVersion())
+                self:settextf("- %s (%s)", translations["UpdateAvailable"], DLMAN:GetLastVersion())
                 self:diffuse(COLORS:getTitleColor("UpdateText"))
                 self:diffusealpha(1)
                 self:visible(false)
@@ -259,7 +287,7 @@ t[#t+1] = Def.ActorFrame {
                 self:xy(versionNumberLeftGap, themeVersionUpperGap)
                 self:maxwidth((gradientwidth - versionNumberLeftGap - logoFrameLeftGap - separatorthickness) / versionTextSizeSmall)
                 self:zoom(versionTextSizeSmall)
-                self:settext("("..getThemeName().." v"..getThemeVersion().."@"..getThemeDate().." by "..getThemeAuthor()..")")
+                self:settext("("..getThemeName().." v"..getThemeVersion().."@"..getThemeDate().." " .. translations["By"] .. " "..getThemeAuthor()..")")
                 self:diffuse(COLORS:getTitleColor("SecondaryText"))
                 self:diffusealpha(1)
             end
@@ -333,6 +361,8 @@ t[#t+1] = Def.ActorFrame {
             self:x(-selectorHeight)
             self:halign(0)
             self:zoomto(selectorHeight, selectorHeight)
+            self:diffuse(color("#805faf"))
+            registerActorToColorConfigElement(self, "title", "ItemTriangle")
         end
     }
 }

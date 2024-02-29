@@ -47,6 +47,7 @@
 #include "Etterna/Models/Songs/SongCacheIndex.h"
 #include "Etterna/Models/Misc/ImageCache.h"
 #include "Etterna/Singletons/DownloadManager.h"
+#include "Etterna/Singletons/ReplayManager.h"
 #include "Etterna/Singletons/ScoreManager.h"
 #include "RageUtil/File/RageFileManager.h"
 #include "Etterna/Actor/Base/ModelManager.h"
@@ -229,7 +230,7 @@ StepMania::ApplyGraphicOptions()
 
 	VideoModeParams params;
 	GetPreferredVideoModeParams(params);
-	std::string sError = DISPLAY->SetVideoMode(params, bNeedReload);
+	std::string sError = DISPLAY->SetVideoMode(std::move(params), bNeedReload);
 	if (!sError.empty())
 		RageException::Throw("%s", sError.c_str());
 
@@ -395,7 +396,6 @@ AdjustForChangedSystemCapabilities()
 	 * Actually, Windows lops off a meg or two; cut off a little lower to treat
 	 * 192-meg systems as high-memory. */
 	const bool HighMemory = (Memory >= 190);
-	const bool LowMemory = (Memory < 100); // 64 and 96-meg systems
 
 	/* Two memory-consuming features that we can disable are texture caching and
 	 * preloaded banners. Texture caching can use a lot of memory; disable it
@@ -825,7 +825,7 @@ CreateDisplay()
 				continue;
 
 			std::string sError =
-			  pRet->Init(params, PREFSMAN->m_bAllowUnacceleratedRenderer);
+			  pRet->Init(std::move(params), PREFSMAN->m_bAllowUnacceleratedRenderer);
 			if (!sError.empty()) {
 				error +=
 				  ssprintf(ERROR_INITIALIZING.GetValue(), sRenderer.c_str()) +
@@ -1112,6 +1112,8 @@ sm_main(int argc, char* argv[])
 	SONGINDEX->FinishTransaction();
 	CRYPTMAN = new CryptManager; // need to do this before ProfileMan
 	SCOREMAN = new ScoreManager;
+	DLMAN = std::make_shared<DownloadManager>();
+	REPLAYS = std::make_shared<ReplayManager>();
 	PROFILEMAN = new ProfileManager;
 	PROFILEMAN->Init(pLoadingWindow); // must load after SONGMAN
 	SONGMAN->CalcTestStuff();		  // must be after profileman init
@@ -1120,8 +1122,6 @@ sm_main(int argc, char* argv[])
 	STATSMAN = new StatsManager;
 
 	FILTERMAN = new FilterManager;
-
-	DLMAN = std::make_shared<DownloadManager>();
 
 	/* If the user has tried to quit during the loading, do it before creating
 	 * the main window. This prevents going to full screen just to quit. */
@@ -1250,11 +1250,9 @@ HandleGlobalInputs(const InputEventPlus& input)
 					GAMESTATE->Reset();
 					SCREENMAN->SetNewScreen(
 					  CommonMetrics::OPERATOR_MENU_SCREEN);
+					return true;
 				}
 			}
-			return true;
-			return false; // Attract needs to know because it goes to TitleMenu
-						  // on > 1 credit
 		default:
 			break;
 	}
@@ -1280,16 +1278,20 @@ HandleGlobalInputs(const InputEventPlus& input)
 			NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
 			CodeDetector::RefreshCacheItems();
 			SCREENMAN->SystemMessage(RELOADED_METRICS);
+			MESSAGEMAN->Broadcast("ReloadedMetrics");
 		} else if (bIsCtrlHeld && !bIsShiftHeld) {
 			// Ctrl+F2: reload scripts only
 			THEME->UpdateLuaGlobals();
 			SCREENMAN->SystemMessage(RELOADED_SCRIPTS);
+			MESSAGEMAN->Broadcast("ReloadedScripts");
 		} else if (bIsCtrlHeld && bIsShiftHeld) {
 			// Shift+Ctrl+F2: reload overlay screens (and metrics, since themers
 			// are likely going to do this after changing metrics.)
 			THEME->ReloadMetrics();
 			SCREENMAN->ReloadOverlayScreens();
 			SCREENMAN->SystemMessage(RELOADED_OVERLAY_SCREENS);
+			MESSAGEMAN->Broadcast("ReloadedMetrics");
+			MESSAGEMAN->Broadcast("ReloadedOverlayScreens");
 		} else {
 			// F2 alone: refresh metrics, textures, noteskins, codedetector
 			// cache
@@ -1298,6 +1300,8 @@ HandleGlobalInputs(const InputEventPlus& input)
 			NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
 			CodeDetector::RefreshCacheItems();
 			SCREENMAN->SystemMessage(RELOADED_METRICS_AND_TEXTURES);
+			MESSAGEMAN->Broadcast("ReloadedMetrics");
+			MESSAGEMAN->Broadcast("ReloadedTextures");
 		}
 
 		return true;

@@ -3,6 +3,7 @@
 #include "Etterna/Models/NoteData/NoteData.h"
 #include "Etterna/Models/Misc/NoteTypes.h"
 #include "NotesLoaderKSF.h"
+#include "RageUtil/File/RageFileManager.h"
 #include "RageUtil/Utils/RageUtil.h"
 #include "RageUtil/Utils/RageUtil_CharConversions.h"
 #include "Etterna/Models/Songs/Song.h"
@@ -255,7 +256,6 @@ LoadFromKSFFile(const std::string& sPath,
 	for (t = 0; t < 13; t++)
 		iHoldStartRow[t] = -1;
 
-	auto newTick = -1;
 	auto fCurBeat = 0.0f;
 	auto prevBeat = 0.0f; // Used for hold tails.
 
@@ -496,14 +496,18 @@ LoadGlobalData(const std::string& sPath, Song& out, bool& bKIUCompliant)
 	// changed up there in case of something is found inside the SONGFILE tag in
 	// the head ksf -DaisuMaster search for music with song in the file name
 	std::vector<std::string> arrayPossibleMusic;
-	GetDirListing(out.GetSongDir() + std::string("song.mp3"),
-				  arrayPossibleMusic);
-	GetDirListing(out.GetSongDir() + std::string("song.oga"),
-				  arrayPossibleMusic);
-	GetDirListing(out.GetSongDir() + std::string("song.ogg"),
-				  arrayPossibleMusic);
-	GetDirListing(out.GetSongDir() + std::string("song.wav"),
-				  arrayPossibleMusic);
+	FILEMAN->GetDirListing(out.GetSongDir() + std::string("song.mp3"),
+						   arrayPossibleMusic,
+						   ONLY_FILE);
+	FILEMAN->GetDirListing(out.GetSongDir() + std::string("song.oga"),
+						   arrayPossibleMusic,
+						   ONLY_FILE);
+	FILEMAN->GetDirListing(out.GetSongDir() + std::string("song.ogg"),
+						   arrayPossibleMusic,
+						   ONLY_FILE);
+	FILEMAN->GetDirListing(out.GetSongDir() + std::string("song.wav"),
+						   arrayPossibleMusic,
+						   ONLY_FILE);
 
 	if (!arrayPossibleMusic.empty()) // we found a match
 		out.m_sMusicFile = arrayPossibleMusic[0];
@@ -601,7 +605,6 @@ LoadGlobalData(const std::string& sPath, Song& out, bool& bKIUCompliant)
 			HandleBunki(out.m_SongTiming, BPM2, BPM3, SMGap2, BPMPos3);
 		}
 	} else {
-		auto fCurBeat = 0.0f;
 		auto bDMRequired = false;
 
 		for (auto& NoteRowString : vNoteRows) {
@@ -627,8 +630,6 @@ LoadGlobalData(const std::string& sPath, Song& out, bool& bKIUCompliant)
 				// ignore whatever else...
 				// continue;
 			}
-
-			fCurBeat += 1.0f / iTickCount;
 		}
 	}
 
@@ -648,7 +649,7 @@ void
 KSFLoader::GetApplicableFiles(const std::string& sPath,
 							  std::vector<std::string>& out)
 {
-	GetDirListing(sPath + std::string("*.ksf"), out);
+	FILEMAN->GetDirListing(sPath + std::string("*.ksf"), out, ONLY_FILE);
 }
 
 bool
@@ -670,10 +671,10 @@ KSFLoader::LoadNoteDataFromSimfile(const std::string& cachePath, Steps& out)
 bool
 KSFLoader::LoadFromDir(const std::string& sDir, Song& out)
 {
-//	LOG->Trace("KSFLoader::LoadFromDir(%s)", sDir.c_str());
 
 	std::vector<std::string> arrayKSFFileNames;
-	GetDirListing(sDir + std::string("*.ksf"), arrayKSFFileNames);
+	FILEMAN->GetDirListing(
+	  sDir + std::string("*.ksf"), arrayKSFFileNames, ONLY_FILE);
 
 	// We shouldn't have been called to begin with if there were no KSFs.
 	ASSERT(arrayKSFFileNames.size() != 0);

@@ -189,6 +189,8 @@ namespace {
         THEME->ReloadMetrics();
         g_NewGame = std::string();
         g_NewTheme = std::string();
+        MESSAGEMAN->Broadcast("ReloadedScripts");
+        MESSAGEMAN->Broadcast("GameChanged");
     }
 } // namespace
 
@@ -314,6 +316,12 @@ namespace GameLoop {
 
             // Render
             SCREENMAN->Draw();
+
+			// Don't burn CPU while unfocused
+			if (!GameLoop::isGameFocused() &&
+				PREFSMAN->m_UnfocusedSleepMillisecs > 0)
+				std::this_thread::sleep_for(std::chrono::milliseconds(
+				  PREFSMAN->m_UnfocusedSleepMillisecs));
         }
 
     	Core::Platform::unboostPriority();
