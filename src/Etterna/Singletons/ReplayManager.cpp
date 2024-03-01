@@ -654,7 +654,7 @@ ReplayManager::CustomTotalWifePointsCalculation(TapNoteType tnt) -> float
 			case TapNoteType_Tap:
 			case TapNoteType_HoldHead:
 			case TapNoteType_Lift:
-				return 2.F;
+				return 300.0f;
 			default:
 				return 0.F;
 		}

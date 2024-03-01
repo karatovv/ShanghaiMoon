@@ -317,7 +317,7 @@ class Replay
 
 	/// For Stats and ReplaySnapshots
 	auto GenerateJudgeInfoAndReplaySnapshots(int startingRow = 0,
-											 float timingScale = 1.F) -> bool;
+											 float timingScale = 8.F) -> bool;
 
 	// Instead of making some complex iterator...
 	// Just offer both solutions

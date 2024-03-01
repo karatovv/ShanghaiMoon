@@ -540,7 +540,7 @@ HighScore::GetMusicRate() const -> float
 auto
 HighScore::GetJudgeScale() const -> float
 {
-	return m_Impl->fJudgeScale;
+	return m_Impl->fOsuOD;
 }
 auto
 HighScore::GetOsuOD() const -> float
@@ -1248,28 +1248,17 @@ HighScore::RescoreToWife3(float pmax) -> bool
 			auto& type = vTapNoteTypeVector[i];
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
-				p4 += wife3(vOffsetVector[i], 1);
-				pj += wife3(vOffsetVector[i], 1);
+				p4 += wife3(vOffsetVector[i], 8);
+				pj += wife3(vOffsetVector[i], 8);
 			}
 		}
 	} else {
 		// blindly assume the offset vector is correct for old replays
 		for (auto& n : vOffsetVector) {
-			p4 += wife3(n, 1);
-			pj += wife3(n, m_Impl->fJudgeScale);
+			p4 += wife3(n, 8);
+			pj += wife3(n, 8); //m_Impl->fJudgeScale
 		}
 	}
-
-	const auto holdpoints =
-	  static_cast<float>(m_Impl->iHoldNoteScores[HNS_LetGo] +
-						 m_Impl->iHoldNoteScores[HNS_Missed]) *
-	  wife3_hold_drop_weight;
-	const auto minepoints =
-	  static_cast<float>(m_Impl->iTapNoteScores[TNS_HitMine]) *
-	  wife3_mine_hit_weight;
-
-	p4 += holdpoints + minepoints;
-	pj += holdpoints + minepoints;
 
 	m_Impl->fSSRNormPercent = p4 / pmax;
 	m_Impl->fWifeScore = pj / pmax;

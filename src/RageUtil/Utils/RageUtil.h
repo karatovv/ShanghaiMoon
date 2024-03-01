@@ -121,68 +121,16 @@ werwerwerwerf(float x) -> float
 inline auto
 wife3(float maxms, float ts) -> float
 {
-	// so judge scaling isn't so extreme
-	static const float j_pow = 0.75F;
-	// min/max points
-	static const float max_points = 2.F;
-	// offset at which points starts decreasing(ms)
-	float ridic = 5.F * ts;
-
-	// technically the max boo is always 180ms above j4 however this is
-	// immaterial to the end purpose of the scoring curve - assignment of point
-	// values
-	float max_boo_weight = 180.F * ts;
-
-	// need positive values for this
-	maxms = std::abs(maxms * 1000.F);
-
-	// case optimizations
-	if (maxms <= ridic) {
-		return max_points;
-	}
-
-	// piecewise inflection
-	float zero = 65.F * pow(ts, j_pow);
-	float dev = 22.7F * pow(ts, j_pow);
-
-	if (maxms <= zero) {
-		return max_points * werwerwerwerf((zero - maxms) / dev);
-	}
-	if (maxms <= max_boo_weight) {
-		return (maxms - zero) * wife3_miss_weight / (max_boo_weight - zero);
-	}
-	return wife3_miss_weight;
+	maxms = std::abs(maxms * 1000.0f);
+	float tw1 = 16.5f, tw2 = 64.5f - (3.0f * ts), tw3 = 97.5f - (3.0f * ts),
+	tw4 = 127.5f - (3.0f * ts), tw5 = 151.5f - (3.0f * ts), twm = 188.5f - (3.0f * ts);
+	if (maxms <= tw1) { return 300.0f; }
+	else if (maxms <= tw2) { return 300.0f; }
+	else if (maxms <= tw3) { return 200.0f; }
+	else if (maxms <= tw4) { return 100.0f; }
+	else if (maxms <= tw5) { return 50.0f; }
+	else { return 0.0f; }
 }
-
-/**inline auto
-osuOD8(const int TapNoteScores[]) -> float
-{
-	int currentScore = 0;
-	for (int i = 5; i <= 9; i++)
-	{
-		switch(i)
-		{
-			case 5:
-			currentScore += TapNoteScores[i] * 50;
-			break;
-			case 6:
-			currentScore += TapNoteScores[i] * 100;
-			break;
-			case 7:
-			currentScore += TapNoteScores[i] * 200;
-			break;
-			case 8:
-			currentScore += TapNoteScores[i] * 300;
-			break;
-			case 9:
-			currentScore += TapNoteScores[i] * 300;
-			break;
-			default:
-			break;
-		}
-	}
-	return static_cast<float>(currentScore);
-}**/
 
 inline auto
 osuOD8(int tns) -> float

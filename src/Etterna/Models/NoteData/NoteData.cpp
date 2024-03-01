@@ -186,7 +186,7 @@ NoteData::WifeTotalScoreCalc(TimingData* td,
 		}
 	}
 
-	return taps * 2;
+	return taps * 300.0f;
 }
 
 auto

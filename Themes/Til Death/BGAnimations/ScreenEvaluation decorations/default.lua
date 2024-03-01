@@ -25,18 +25,10 @@ local translated_info = {
 local aboutToForceWindowSettings = false
 
 local function scaleToJudge(scale)
-	scale = notShit.round(scale, 2)
-	local scales = ms.JudgeScalers
-	local out = 4
-	for k,v in pairs(scales) do
-		if v == scale then
-			out = k
-		end
-	end
-	return out
+	return scale
 end
 
-local judge = PREFSMAN:GetPreference("SortBySSRNormPercent") and 4 or GetTimingDifficulty()
+local judge = PREFSMAN:GetPreference("SortBySSRNormPercent") and 8 or GetTimingDifficulty()
 local judge2 = judge
 local score = SCOREMAN:GetMostRecentScore()
 if not score then
@@ -180,8 +172,6 @@ local function scoreBoard(pn, position)
 
 	-- we removed j1-3 so uhhh this stops things lazily
 	local function clampJudge()
-		if judge < 4 then judge = 4 end
-		if judge > 9 then judge = 9 end
 	end
 	clampJudge()
 
@@ -192,12 +182,12 @@ local function scoreBoard(pn, position)
 				self:x(SCREEN_WIDTH - (frameX * 2) - frameWidth)
 			end
 			if PREFSMAN:GetPreference("SortBySSRNormPercent") then
-				judge = 4
+				judge = 8
 				judge2 = judge
 				-- you ever hack something so hard?
 				aboutToForceWindowSettings = true
-				MESSAGEMAN:Broadcast("ForceWindow", {judge=4})
-				MESSAGEMAN:Broadcast("RecalculateGraphs", {judge=4})
+				MESSAGEMAN:Broadcast("ForceWindow", {judge=8})
+				MESSAGEMAN:Broadcast("RecalculateGraphs", {judge=8})
 			else
 				judge = scaleToJudge(SCREENMAN:GetTopScreen():GetReplayJudge())
 				clampJudge()

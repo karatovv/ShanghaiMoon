@@ -2,8 +2,8 @@
 
 local judges = {"marv", "perf", "great", "good", "boo", "miss"}
 local tst = ms.JudgeScalers
-local judge = 4
-local tso = tst[judge]
+local judge = 8
+local tso = tst[judge + 1]
 
 local plotWidth, plotHeight = 400, 120
 local plotX, plotY = SCREEN_WIDTH - 5 - plotWidth / 2, SCREEN_HEIGHT - 59.5 - plotHeight / 2
@@ -51,6 +51,9 @@ local right = false
 local middle = false
 local usingCustomWindows = false
 
+local function clampJudge()
+end
+
 local function fitX(x) -- Scale time values to fit within plot width.
 	if finalSecond == 0 then
 		return 0
@@ -65,13 +68,6 @@ end
 local function HighlightUpdaterThing(self)
 	self:GetChild("BGQuad"):queuecommand("Highlight")
 end
-
--- we removed j1-3 so uhhh this stops things lazily
-local function clampJudge()
-	if judge < 4 then judge = 4 end
-	if judge > 9 then judge = 9 end
-end
-clampJudge()
 
 local function scaleToJudge(scale)
 	scale = notShit.round(scale, 2)
@@ -110,8 +106,6 @@ local o = Def.ActorFrame {
 		local name = SCREENMAN:GetTopScreen():GetName()
 		if name == "ScreenNetEvaluation" then -- moving away from grabbing anything in pss, dont want to mess with net stuff atm
 			if not forcedWindow then
-				judge = scaleToJudge(SCREENMAN:GetTopScreen():GetReplayJudge())
-				clampJudge()
 				tso = tst[judge]
 			end
 			local allowHovering = not SCREENMAN:GetTopScreen():ScoreUsedInvalidModifier()
@@ -207,13 +201,11 @@ local o = Def.ActorFrame {
 	CodeMessageCommand = function(self, params)
 		if usingCustomWindows then return end
 
-		if params.Name == "PrevJudge" and judge > 1 then
+		if params.Name == "PrevJudge" and judge > 0 then
 			judge = judge - 1
-			clampJudge()
 			tso = tst[judge]
-		elseif params.Name == "NextJudge" and judge < 9 then
+		elseif params.Name == "NextJudge" and judge < 10 then
 			judge = judge + 1
-			clampJudge()
 			tso = tst[judge]
 		end
 		if params.Name == "ToggleHands" and #ctt > 0 then --super ghetto toggle -mina
