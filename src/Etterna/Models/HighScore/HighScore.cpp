@@ -1256,7 +1256,7 @@ HighScore::RescoreToWife3(float pmax) -> bool
 		// blindly assume the offset vector is correct for old replays
 		for (auto& n : vOffsetVector) {
 			p4 += wife3(n, 8);
-			pj += wife3(n, 8); //m_Impl->fJudgeScale
+			pj += wife3(n, m_Impl->fJudgeScale);
 		}
 	}
 

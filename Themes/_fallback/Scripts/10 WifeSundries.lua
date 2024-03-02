@@ -104,11 +104,11 @@ ms.SkillSetsShortTranslated = {
 ms.JudgeScalers = GAMESTATE:GetTimingScales()
 
 ms.BaseJudgeWindows = {
-	22.5, -- max marvelous
-	45.0, -- max perfect
-	90.0, -- max great
-	135.0, -- max good
-	180.0 -- max bad
+	16.5, -- max marvelous
+	64.5, -- max perfect
+	97.5, -- max great
+	127.5, -- max good
+	188.5 -- max bad
 }
 
 -- convert a Judge and Judgment to ms of the upper or lower bound of the window

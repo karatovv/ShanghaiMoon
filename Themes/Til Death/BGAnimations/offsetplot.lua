@@ -8,7 +8,7 @@ local tso = tst[judge + 1]
 local plotWidth, plotHeight = 400, 120
 local plotX, plotY = SCREEN_WIDTH - 5 - plotWidth / 2, SCREEN_HEIGHT - 59.5 - plotHeight / 2
 local dotDims, plotMargin = 2, 4
-local maxOffset = 188 - (3 *tso)
+local maxOffset = 188 - (3 * tso)
 local baralpha = 0.2
 local bgalpha = 0.8
 local textzoom = 0.35
@@ -72,7 +72,7 @@ end
 local function scaleToJudge(scale)
 	scale = notShit.round(scale, 2)
 	local scales = ms.JudgeScalers
-	local out = 4
+	local out = 8
 	for k,v in pairs(scales) do
 		if v == scale then
 			out = k
@@ -106,7 +106,8 @@ local o = Def.ActorFrame {
 		local name = SCREENMAN:GetTopScreen():GetName()
 		if name == "ScreenNetEvaluation" then -- moving away from grabbing anything in pss, dont want to mess with net stuff atm
 			if not forcedWindow then
-				tso = tst[judge]
+				judge = scaleToJudge(SCREENMAN:GetTopScreen():GetReplayJudge())
+				tso = tst[judge + 1]
 			end
 			local allowHovering = not SCREENMAN:GetTopScreen():ScoreUsedInvalidModifier()
 			if allowHovering then
@@ -203,10 +204,10 @@ local o = Def.ActorFrame {
 
 		if params.Name == "PrevJudge" and judge > 0 then
 			judge = judge - 1
-			tso = tst[judge]
+			tso = tst[judge + 1]
 		elseif params.Name == "NextJudge" and judge < 10 then
 			judge = judge + 1
-			tso = tst[judge]
+			tso = tst[judge + 1]
 		end
 		if params.Name == "ToggleHands" and #ctt > 0 then --super ghetto toggle -mina
 			if not handspecific then -- moving from none to left
@@ -230,16 +231,16 @@ local o = Def.ActorFrame {
 		if params.Name == "ResetJudge" then
 			judge = GetTimingDifficulty()
 			clampJudge()
-			tso = tst[GetTimingDifficulty()]
+			tso = tst[GetTimingDifficulty() + 1]
 		end
 		if params.Name ~= "ResetJudge" and params.Name ~= "PrevJudge" and params.Name ~= "NextJudge" and params.Name ~= "ToggleHands" then return end
-		maxOffset = 188 - (3 *tso)
+		maxOffset = 188 - (3 * tso)
 		MESSAGEMAN:Broadcast("JudgeDisplayChanged")
 	end,
 	ForceWindowMessageCommand = function(self, params)
 		judge = params.judge
 		clampJudge()
-		tso = tst[judge]
+		tso = tst[judge + 1]
 		maxOffset = 188 - (3 * tso)
 		forcedWindow = true
 	end,
@@ -294,6 +295,8 @@ o[#o + 1] = Def.Quad {
 			local goodCount = judgments["W4"]
 			local badCount = judgments["W5"]
 			local missCount = judgments["Miss"]
+
+
 
 			--txt:settextf("x %f\nrow %f\nbeat %f\nfinalsecond %f", xpos, row, row/48, finalSecond)
 			-- The odd formatting here is in case we want to add translation support.
@@ -403,7 +406,7 @@ o[#o + 1] = Def.ActorMultiVertex {
 		for i = 1, #dvt do
 			local x = fitX(wuab[i])
 			local y = fitY(dvt[i])
-			local fit = math.max(183, 183 * tso)
+			local fit = 188.5 - (3 * tso)
 
 			-- get the color for the tap
 			local cullur = offsetToJudgeColor(dvt[i], tst[judge])
@@ -531,7 +534,7 @@ o[#o + 1] = LoadFont("Common Normal") .. {
 		end
 	end,
 	SetCommand = function(self)
-		local jdgname = "J" .. judge
+		local jdgname = "OD" .. judge
 		self:settextf("%s", jdgname)
 	end,
 	JudgeDisplayChangedMessageCommand = function(self)

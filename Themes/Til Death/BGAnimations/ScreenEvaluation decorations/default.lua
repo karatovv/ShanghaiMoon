@@ -178,11 +178,6 @@ local function scoreBoard(pn, position)
 	end
 	setupNewScoreData(score)
 
-	-- we removed j1-3 so uhhh this stops things lazily
-	local function clampJudge()
-	end
-	clampJudge()
-
 	local t = Def.ActorFrame {
 		Name = "ScoreDisplay",
 		BeginCommand = function(self)
@@ -198,7 +193,6 @@ local function scoreBoard(pn, position)
 				MESSAGEMAN:Broadcast("RecalculateGraphs", {judge=8})
 			else
 				judge = scaleToJudge(SCREENMAN:GetTopScreen():GetReplayJudge())
-				clampJudge()
 				judge2 = judge
 				MESSAGEMAN:Broadcast("ForceWindow", {judge=judge})
 				MESSAGEMAN:Broadcast("RecalculateGraphs", {judge=judge})
@@ -543,28 +537,24 @@ local function scoreBoard(pn, position)
 
 					local rescoretable = getRescoreElements(score)
 					local rescorepercent = 0
-					local ws = "Wife3" .. " J"
-					if params.Name == "PrevJudge" and judge > 4 then
+					local ws = "osu!mania OD"
+					if params.Name == "PrevJudge" and judge > 0 then
 						judge = judge - 1
-						clampJudge()
 						rescorepercent = getRescoredWife3Judge(3, judge, rescoretable)
 						self:settextf(
 							"%05.2f%% (%s)", notShit.floor(rescorepercent, 2), ws .. judge
 						)
-						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
-					elseif params.Name == "NextJudge" and judge < 9 then
+						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge + 1})
+					elseif params.Name == "NextJudge" and judge < 10 then
 						judge = judge + 1
-						clampJudge()
 						rescorepercent = getRescoredWife3Judge(3, judge, rescoretable)
-						local js = judge ~= 9 and judge or "ustice"
 							self:settextf(
-								"%05.2f%% (%s)", notShit.floor(rescorepercent, 2), ws .. js
+								"%05.2f%% (%s)", notShit.floor(rescorepercent, 2), ws .. judge
 						)
-						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
+						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge + 1})
 					end
 					if params.Name == "ResetJudge" then
 						judge = GetTimingDifficulty()
-						clampJudge()
 						self:playcommand("Set")
 						MESSAGEMAN:Broadcast("RecalculateGraphs", {judge = judge})
 					end
@@ -1040,7 +1030,7 @@ local function scoreBoard(pn, position)
 		local cbr = 0
 		local cbm = 0
 		local tst = ms.JudgeScalers
-		local tso = tst[judge]
+		local tso = tst[judge + 1]
 		local ncol = GAMESTATE:GetCurrentSteps():GetNumColumns() - 1
 		local middleCol = ncol/2
 
@@ -1060,7 +1050,7 @@ local function scoreBoard(pn, position)
 
 		for i = 1, #devianceTable do
 			if tracks[i] then
-				if math.abs(devianceTable[i]) > tso * 90 then
+				if math.abs(devianceTable[i]) > (188.5 - 3 * tso) then
 					if tracks[i] < middleCol then
 						cbl = cbl + 1
 					elseif tracks[i] > middleCol then
@@ -1116,7 +1106,7 @@ local function scoreBoard(pn, position)
 	if devianceTable ~= nil then
 		for i = 1, #devianceTable do
 			if tracks[i] then	-- we dont load track data when reconstructing eval screen apparently so we have to nil check -mina
-				if math.abs(devianceTable[i]) > tso * 90 then
+				if math.abs(devianceTable[i]) > (188.5 - 3 * tso) then
 					if tracks[i] < middleCol then
 						cbl = cbl + 1
 					elseif tracks[i] > middleCol then
@@ -1218,7 +1208,7 @@ local function scoreBoard(pn, position)
 								statValues[j+1] = 0
 								for i = 1, #devianceTable do
 									if tracks[i] then	-- it would probably make sense to move all this to c++
-										if math.abs(devianceTable[i]) > tso * 90 then
+										if math.abs(devianceTable[i]) > (188.5 - 3 * tso) then
 											if tracks[i] <= math.floor(ncol/2) then
 												statValues[j] = statValues[j] + 1
 											else
@@ -1243,7 +1233,7 @@ local function scoreBoard(pn, position)
 								statValues[j+1] = 0
 								for i = 1, #devianceTable do
 									if tracks[i] then	-- it would probably make sense to move all this to c++
-										if math.abs(devianceTable[i]) > tso * 90 then
+										if math.abs(devianceTable[i]) > (188.5 - 3 * tso) then
 											if tracks[i] <= math.floor(ncol/2) then
 												statValues[j] = statValues[j] + 1
 											else

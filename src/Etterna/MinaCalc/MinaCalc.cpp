@@ -956,7 +956,7 @@ MinaSDCalc(const std::vector<NoteInfo>& NoteInfo,
 	calc->ssr = true;
 	calc->debugmode = false;
 
-	return calc->CalcMain(NoteInfo, musicrate, min(goal, ssr_goal_cap));
+	return calc->CalcMain(NoteInfo, musicrate, min(goal - 0.02f, ssr_goal_cap));
 }
 
 // Wrap difficulty calculation for all standard rates

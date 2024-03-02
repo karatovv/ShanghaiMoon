@@ -90,9 +90,9 @@ wife2(float maxms, float ts) -> float
 	return (2 - -8) * (1 - y) + -8;
 }
 
-static const float wife3_mine_hit_weight = -7.F;
-static const float wife3_hold_drop_weight = -4.5F;
-static const float wife3_miss_weight = -5.5F;
+static const float wife3_mine_hit_weight = 0.0F;
+static const float wife3_hold_drop_weight = 0.0F;
+static const float wife3_miss_weight = 0.0F;
 
 // erf approximation A&S formula 7.1.26
 inline auto

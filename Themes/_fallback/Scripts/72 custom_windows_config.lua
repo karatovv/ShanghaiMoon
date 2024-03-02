@@ -156,11 +156,11 @@ local defaultConfig = {
 			},
 			customWindowCurveFunction = nil,
 			customWindowWindows = {
-				W1 = 16.0,
-				W2 = 34.0,
-				W3 = 67.0,
-				W4 = 97.0,
-				W5 = 121.0,
+				W1 = 16.5,
+				W2 = 34.5,
+				W3 = 67.5,
+				W4 = 97.5,
+				W5 = 121.5,
 			},
 			customWindowWorths = {
 				W1 = 3,
@@ -171,18 +171,18 @@ local defaultConfig = {
 				Miss = 0,
 			},
 			customWindowHoldWorths = {
-				LetGo = -3,
-				Missed = -3,
-				Held = 0.5,
+				LetGo = 0,
+				Missed = 0,
+				Held = 0,
 			},
 			customWindowMineHitWorth = 0,
 			customWindowTapNoteTypeWorths = {
 				Tap = 3,
-				HoldHead = 3.5,
+				HoldHead = 3,
 				Lift = 3,
 				Mine = 0,
 			},
-			judgeByOldestNote = true,
+			judgeByOldestNote = false,
 		}
 
 	},

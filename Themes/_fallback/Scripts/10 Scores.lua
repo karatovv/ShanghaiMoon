@@ -435,19 +435,35 @@ end
 -- For Window-based Scoring
 function getRescoredJudge(offsetVector, judgeScale, judge)
 	local tso = ms.JudgeScalers
-	local ts = tso[judgeScale]
-	local windows = {22.5, 45.0, 90.0, 135.0, 180.0, 500.0}
-	local lowerBound = judge > 1 and windows[judge - 1] * ts or -1.0
-	local upperBound = judge == 5 and math.max(windows[judge] * ts, 180.0) or windows[judge] * ts
+	local ts = tso[judgeScale + 1]
+	local windows = {16.5, 64.5, 97.5, 127.5, 151.5, 188.5}
+	local lowerBound = judge > 1 and windows[judge - 1] - (3 * ts) or -1.0
+	local upperBound = windows[judge] - (3 * ts)
 	local judgeCount = 0
 
 	if offsetVector == nil then return judgeCount end
 
 	if judge > 5 then
-		lowerBound = math.max(lowerBound, 180.0)
+		lowerBound = 188.5 - (3 * ts)
 		for i = 1, #offsetVector do
 			x = math.abs(offsetVector[i])
 			if (x > lowerBound) then
+				judgeCount = judgeCount + 1
+			end
+		end
+	elseif judge == 1 then
+	for i = 1, #offsetVector do
+		upperBound = 16.5
+		x = math.abs(offsetVector[i])
+		if (x > lowerBound and x <= upperBound) then
+			judgeCount = judgeCount + 1
+		end
+	end
+	elseif judge == 2 then
+			lowerBound = 16.5
+		for i = 1, #offsetVector do
+			x = math.abs(offsetVector[i])
+			if (x > lowerBound and x <= upperBound) then
 				judgeCount = judgeCount + 1
 			end
 		end
@@ -609,42 +625,29 @@ function erf(x)
     return sign*y
 end
 function wife3(maxms, ts, version)
-
-	local max_points = 2
-	local miss_weight = -5.5
-	local ridic = 5 * ts
-	local max_boo_weight = 180 * ts
-	local ts_pow = 0.75
-	local zero = 65 * (ts^ts_pow)
-	local power = 2.5
-	local dev = 22.7 * (ts^ts_pow)
-
-	-- case handling
-	if maxms <= ridic then			-- anything below this (judge scaled) threshold is counted as full pts
-		return max_points
-	elseif maxms <= zero then			-- ma/pa region, exponential
-			return max_points * erf((zero - maxms) / dev)
-	elseif maxms <= max_boo_weight then -- cb region, linear
-		return (maxms - zero) * miss_weight / (max_boo_weight - zero)
-	else							-- we can just set miss values manually
-		return miss_weight			-- technically the max boo is always 180 above j4 however this is immaterial to the
-	end								-- purpose of the scoring curve, which is to assign point values
+	local tw1 = 16.5 local tw2 = 64.5 - (3.0 * ts) local tw3 = 97.5 - (3.0 * ts)
+	local tw4 = 127.5 - (3.0 * ts) local tw5 = 151.5 - (3.0 * ts) local twm = 188.5 - (3.0 * ts)
+	if (maxms <= tw1) then return 300.0
+	elseif (maxms <= tw2) then return 300.0
+	elseif (maxms <= tw3) then return 200.0
+	elseif (maxms <= tw4) then return 100.0
+	elseif (maxms <= tw5) then return 50.0
+	elseif (maxms <= twm) then return 0.0
+	else return 0.0 end							-- purpose of the scoring curve, which is to assign point values
 end
 
 -- holy shit this is fugly
 function getRescoredWife3Judge(version, judgeScale, rst)
 	local tso = ms.JudgeScalers
-	local ts = tso[judgeScale]
+	local ts = tso[judgeScale + 1]
 	local p = 0.0
 	local dvt = rst["dvt"]
 	if dvt == nil then return p end
 
-	for i = 1, #dvt do							-- wife2 does not require abs due to ^2 but this does
+	for i = 1, #dvt do							
 		p = p + wife3(math.abs(dvt[i]), ts, version)
 	end
-	p = p + (rst["holdsMissed"] * -4.5)
-	p = p + (rst["minesHit"] * -7)
-	return (p / (rst["totalTaps"] * 2)) * 100.0
+	return (p / (rst["totalTaps"] * 300)) * 100.0
 end
 
 -- convert midgrades to full grades to help cope with the midgrade preference
