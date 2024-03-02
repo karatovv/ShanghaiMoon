@@ -182,15 +182,16 @@ function offsetToJudgeColor(offset, scale)
 	if not scale then
 		scale = PREFSMAN:GetPreference("TimingWindowScale")
 	end
-	if offset <= scale * PREFSMAN:GetPreference("TimingWindowSecondsW1") then
+	local scale1 = scale * 3 / 1000
+	if offset <= PREFSMAN:GetPreference("TimingWindowSecondsW1") then
 		return color(colorConfig:get_data().judgment["TapNoteScore_W1"])
-	elseif offset <= scale * PREFSMAN:GetPreference("TimingWindowSecondsW2") then
+	elseif offset <= PREFSMAN:GetPreference("TimingWindowSecondsW2") - scale1 then
 		return color(colorConfig:get_data().judgment["TapNoteScore_W2"])
-	elseif offset <= scale * PREFSMAN:GetPreference("TimingWindowSecondsW3") then
+	elseif offset <= PREFSMAN:GetPreference("TimingWindowSecondsW3") - scale1 then
 		return color(colorConfig:get_data().judgment["TapNoteScore_W3"])
-	elseif offset <= scale * PREFSMAN:GetPreference("TimingWindowSecondsW4") then
+	elseif offset <= PREFSMAN:GetPreference("TimingWindowSecondsW4") - scale1 then
 		return color(colorConfig:get_data().judgment["TapNoteScore_W4"])
-	elseif offset <= math.max(scale * PREFSMAN:GetPreference("TimingWindowSecondsW5"), 0.180) then
+	elseif offset <= (PREFSMAN:GetPreference("TimingWindowSecondsW5")) - scale1 then
 		return color(colorConfig:get_data().judgment["TapNoteScore_W5"])
 	else
 		return color(colorConfig:get_data().judgment["TapNoteScore_Miss"])

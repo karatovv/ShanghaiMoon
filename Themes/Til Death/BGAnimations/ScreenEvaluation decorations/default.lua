@@ -25,7 +25,15 @@ local translated_info = {
 local aboutToForceWindowSettings = false
 
 local function scaleToJudge(scale)
-	return scale
+	scale = notShit.round(scale, 2)
+	local scales = ms.JudgeScalers
+	local out = 4
+	for k,v in pairs(scales) do
+		if v == scale then
+			out = k
+		end
+	end
+	return out
 end
 
 local judge = PREFSMAN:GetPreference("SortBySSRNormPercent") and 8 or GetTimingDifficulty()

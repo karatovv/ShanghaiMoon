@@ -8,7 +8,7 @@ local tso = tst[judge + 1]
 local plotWidth, plotHeight = 400, 120
 local plotX, plotY = SCREEN_WIDTH - 5 - plotWidth / 2, SCREEN_HEIGHT - 59.5 - plotHeight / 2
 local dotDims, plotMargin = 2, 4
-local maxOffset = math.max(180, 180 * tso)
+local maxOffset = 188 - (3 *tso)
 local baralpha = 0.2
 local bgalpha = 0.8
 local textzoom = 0.35
@@ -233,14 +233,14 @@ local o = Def.ActorFrame {
 			tso = tst[GetTimingDifficulty()]
 		end
 		if params.Name ~= "ResetJudge" and params.Name ~= "PrevJudge" and params.Name ~= "NextJudge" and params.Name ~= "ToggleHands" then return end
-		maxOffset = math.max(180, 180 * tso)
+		maxOffset = 188 - (3 *tso)
 		MESSAGEMAN:Broadcast("JudgeDisplayChanged")
 	end,
 	ForceWindowMessageCommand = function(self, params)
 		judge = params.judge
 		clampJudge()
 		tso = tst[judge]
-		maxOffset = math.max(180, 180 * tso)
+		maxOffset = 188 - (3 * tso)
 		forcedWindow = true
 	end,
 	UpdateNetEvalStatsMessageCommand = function(self) -- i haven't updated or tested neteval during last round of work -mina
@@ -346,14 +346,15 @@ o[#o + 1] = Def.Quad {
 		self:zoomto(plotWidth + plotMargin, 1):diffuse(byJudgment("TapNoteScore_W1")):diffusealpha(baralpha)
 	end
 }
-local fantabars = {22.5, 45, 90, 135}
-local bantafars = {"TapNoteScore_W2", "TapNoteScore_W3", "TapNoteScore_W4", "TapNoteScore_W5"}
+local fantabars = {16.5, 64.5, 97.5, 127.5}
+local bantafars = {"TapNoteScore_W1", "TapNoteScore_W2", "TapNoteScore_W3", "TapNoteScore_W4"}
 local santabarf = {"TapNoteScore_W1", "TapNoteScore_W2", "TapNoteScore_W3", "TapNoteScore_W4"} -- ugh
 for i = 1, #fantabars do
 	o[#o + 1] = Def.Quad {
 		JudgeDisplayChangedMessageCommand = function(self)
 			self:zoomto(plotWidth + plotMargin, 1):diffuse(byJudgment(bantafars[i])):diffusealpha(baralpha)
-			local fit = tso * fantabars[i]
+			fit = fantabars[i]
+			if i ~= 1 then fit = fantabars[i] - (3 * tso) end
 			if usingCustomWindows then
 				fit = getCustomWindowConfigJudgmentWindow(santabarf[i])
 			end
@@ -365,7 +366,8 @@ for i = 1, #fantabars do
 	o[#o + 1] = Def.Quad {
 		JudgeDisplayChangedMessageCommand = function(self)
 			self:zoomto(plotWidth + plotMargin, 1):diffuse(byJudgment(bantafars[i])):diffusealpha(baralpha)
-			local fit = tso * fantabars[i]
+			fit = fantabars[i]
+			if i ~= 1 then fit = fantabars[i] - (3 * tso) end
 			if usingCustomWindows then
 				fit = getCustomWindowConfigJudgmentWindow(santabarf[i])
 			end
