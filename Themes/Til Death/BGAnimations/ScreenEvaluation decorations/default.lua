@@ -192,7 +192,6 @@ local function scoreBoard(pn, position)
 				MESSAGEMAN:Broadcast("ForceWindow", {judge=8})
 				MESSAGEMAN:Broadcast("RecalculateGraphs", {judge=8})
 			else
-				judge = scaleToJudge(SCREENMAN:GetTopScreen():GetReplayJudge())
 				judge2 = judge
 				MESSAGEMAN:Broadcast("ForceWindow", {judge=judge})
 				MESSAGEMAN:Broadcast("RecalculateGraphs", {judge=judge})
@@ -1085,7 +1084,7 @@ local function scoreBoard(pn, position)
 
 	-- basic per-hand stats to be expanded on later
 	local tst = ms.JudgeScalers
-	local tso = tst[judge]
+	local tso = tst[judge + 1]
 	local ncol = GAMESTATE:GetCurrentSteps():GetNumColumns() - 1 -- cpp indexing -mina
 	local middleCol = ncol/2
 

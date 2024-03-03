@@ -8,7 +8,7 @@ local tso = tst[judge + 1]
 local plotWidth, plotHeight = 400, 120
 local plotX, plotY = SCREEN_WIDTH - 5 - plotWidth / 2, SCREEN_HEIGHT - 59.5 - plotHeight / 2
 local dotDims, plotMargin = 2, 4
-local maxOffset = 188 - (3 * tso)
+local maxOffset = 188.5 - (3 * tso)
 local baralpha = 0.2
 local bgalpha = 0.8
 local textzoom = 0.35
@@ -50,9 +50,6 @@ local up = false
 local right = false
 local middle = false
 local usingCustomWindows = false
-
-local function clampJudge()
-end
 
 local function fitX(x) -- Scale time values to fit within plot width.
 	if finalSecond == 0 then
@@ -106,7 +103,7 @@ local o = Def.ActorFrame {
 		local name = SCREENMAN:GetTopScreen():GetName()
 		if name == "ScreenNetEvaluation" then -- moving away from grabbing anything in pss, dont want to mess with net stuff atm
 			if not forcedWindow then
-				judge = scaleToJudge(SCREENMAN:GetTopScreen():GetReplayJudge())
+				judge = SCREENMAN:GetTopScreen():GetReplayJudge()
 				tso = tst[judge + 1]
 			end
 			local allowHovering = not SCREENMAN:GetTopScreen():ScoreUsedInvalidModifier()
@@ -230,18 +227,18 @@ local o = Def.ActorFrame {
 		end
 		if params.Name == "ResetJudge" then
 			judge = GetTimingDifficulty()
-			clampJudge()
-			tso = tst[GetTimingDifficulty() + 1]
+			
+			tso = tst[GetTimingDifficulty()]
 		end
 		if params.Name ~= "ResetJudge" and params.Name ~= "PrevJudge" and params.Name ~= "NextJudge" and params.Name ~= "ToggleHands" then return end
-		maxOffset = 188 - (3 * tso)
+		maxOffset = 188.5 - (3 * tso)
 		MESSAGEMAN:Broadcast("JudgeDisplayChanged")
 	end,
 	ForceWindowMessageCommand = function(self, params)
 		judge = params.judge
-		clampJudge()
+		
 		tso = tst[judge + 1]
-		maxOffset = 188 - (3 * tso)
+		maxOffset = 188.5 - (3 * tso)
 		forcedWindow = true
 	end,
 	UpdateNetEvalStatsMessageCommand = function(self) -- i haven't updated or tested neteval during last round of work -mina
