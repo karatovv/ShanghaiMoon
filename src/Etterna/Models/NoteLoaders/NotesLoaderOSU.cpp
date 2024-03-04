@@ -358,8 +358,6 @@ OsuLoader::LoadNoteDataFromParsedData(
 		}
 		newNoteData.AddHoldNote(
 		  lane(hold.lane), start, end, TAP_ORIGINAL_HOLD_HEAD);
-		if (useLifts)
-			newNoteData.SetTapNote(lane(hold.lane), end + 1, TAP_ORIGINAL_LIFT);
 	}
 
 	out->m_pSong->m_SongTiming.m_fBeat0OffsetInSeconds = -firstTap / 1000.0f;

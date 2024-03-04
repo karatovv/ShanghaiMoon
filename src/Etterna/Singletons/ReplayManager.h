@@ -78,7 +78,7 @@ class ReplayManager
 	void ResetActiveReplaySettings();
 
 	static TapNoteScore GetTapNoteScoreForReplay(float fNoteOffset,
-												 float timingScale = 1.F);
+												 float timingScale = 8.F);
 
 	auto CalculateRadarValuesForReplay(Replay& replay,
 									   RadarValues& rv,

@@ -1246,8 +1246,7 @@ HighScore::RescoreToWife3(float pmax) -> bool
 			// by the powers of god invested in me i declare these vectors the
 			// same size so this works all the time no matter what
 			auto& type = vTapNoteTypeVector[i];
-			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
-				type == TapNoteType_Lift) {
+			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead || type == TapNoteType_Lift) {
 				p4 += wife3(vOffsetVector[i], 8);
 				pj += wife3(vOffsetVector[i], 8);
 			}
@@ -1368,8 +1367,7 @@ HighScore::NormalizeJudgments() -> bool
 		for (size_t i = 0; i < vOffsetVector.size(); i++) {
 			// assumption of equal size, no crashy
 			auto& type = vTapNoteTypeVector[i];
-			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
-				type == TapNoteType_Lift) {
+			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead || type == TapNoteType_Lift) {
 				const auto x = std::abs(vOffsetVector[i] * 1000.F);
 				if (x <= 16.5F) {
 					m_Impl->iTapNoteScoresNormalized[TNS_W1]++;

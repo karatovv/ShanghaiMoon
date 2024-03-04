@@ -27,7 +27,7 @@ const int ARBITRARY_MIN_GAMEPLAY_NUMBER = -200000;
 
 // the hard end of the boo window and start of the miss window
 // dont let anyone hit a note outside of this
-const float MISS_WINDOW_BEGIN_SEC = 0.18F;
+const float MISS_WINDOW_BEGIN_SEC = 0.1885F;
 
 // 75ms in both directions, around a j5 great
 const float MINE_WINDOW_SEC = 0.075F;

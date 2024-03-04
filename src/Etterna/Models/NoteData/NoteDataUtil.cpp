@@ -1,6 +1,7 @@
 #include "Etterna/Globals/global.h"
 #include "Etterna/Singletons/GameState.h"
 #include "NoteData.h"
+#include "Etterna/Models/Misc/TimingData.h"
 #include "NoteDataUtil.h"
 #include "Etterna/Models/Misc/PlayerOptions.h"
 #include "Etterna/Models/Misc/RadarValues.h"
@@ -175,6 +176,11 @@ LoadFromSMNoteDataStringWithPlayer(NoteData& out,
 						} else {
 							out.FindTapNote(iTrack, iHeadRow)
 							  ->second.iDuration = iIndex - iHeadRow;
+							TimingData* m_Timing = GAMESTATE->m_pCurSteps->GetTimingData();
+							if (m_Timing->WhereUAtBro(iIndex) -
+								  m_Timing->WhereUAtBro(iHeadRow) >= 0.1) {
+							out.SetTapNote(iTrack, iIndex, TAP_ORIGINAL_LIFT);
+							}
 						}
 
 						// This won't write tn, but keep parsing normally
@@ -264,7 +270,6 @@ LoadFromSMNoteDataStringWithPlayer(NoteData& out,
 			begin = next;
 		}
 	}
-	out.RevalidateATIs(std::vector<int>(), false);
 }
 
 void

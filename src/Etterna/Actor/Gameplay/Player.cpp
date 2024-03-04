@@ -1366,49 +1366,9 @@ Player::UpdateHoldNotes(int iSongRow,
 		SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
 	}**/
 	auto& tn = *vTN[0].pTN;
-	if ((hns == HNS_LetGo || hns == HNS_Held) && tn.subType != TapNoteSubType_Roll)
-		{
-			float fStepBeat = NoteRowToBeat(tn.HoldResult.iLastHeldRow);
-			float fLastHeldSeconds = m_Timing->WhereUAtBro(fStepBeat);
-			fStepBeat = NoteRowToBeat(iMaxEndRow);
-			float fMaxEndSeconds = m_Timing->WhereUAtBro(fStepBeat);
-			float offset = fabs(fLastHeldSeconds - fMaxEndSeconds);
-			
-
-			tn.HoldResult.hns = HNS_Held;
-
-			if (fMaxEndSeconds - m_Timing->WhereUAtBro(iStartRow) <= 0.1 ) // dont judge release if LN length is <= 100ms
-			{
-				SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
-				HandleHoldScore(tn);
-				return;
-			}
-
-			if (offset <= GetWindowSeconds(TW_W1) * 2.0f) {
-				IncrementCombo();
-				tn.result.tns = TNS_W1;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W2) * 2.0f) {
-				IncrementCombo();
-				tn.result.tns = TNS_W2;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W3) * 2.0f) {
-				IncrementCombo();
-				tn.result.tns = TNS_W3;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else if (offset <= GetWindowSeconds(TW_W4) * 2.0f) {
-				IncrementCombo();
-				tn.result.tns = TNS_W4;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);
-			} else {
-				IncrementMissCombo();
-				tn.result.tns = TNS_W5;
-				tn.HoldResult.hns = HNS_LetGo;
-				SetJudgment(iSongRow, iFirstTrackWithMaxEndRow, tn);	
-			}
-		}
 
 	if (hns != HNS_None) {
+		tn.HoldResult.hns = HNS_Held;
 		SetHoldJudgment(tn, iFirstTrackWithMaxEndRow, iSongRow);
 		HandleHoldScore(tn);
 	}
@@ -2131,7 +2091,22 @@ Player::Step(int col,
 		DEBUG_ASSERT(iter != m_NoteData.end(col));
 		pTN = &iter->second;
 
-		if (row == -1) {
+		if (row == -1 && pTN->type == TapNoteType_Lift) {
+			fNoteOffset = (fStepSeconds - fMusicSeconds) / fMusicRate;
+			fNoteOffset = fNoteOffset / 2.f;
+			// input data (a real tap mapped to a note any distance away)
+			// this also skips things like mines hit by CrossedRows (holding)
+			m_pPlayerStageStats->InputData.emplace_back(
+			  bRelease,
+			  col,
+			  fMusicSeconds,
+			  iRowOfOverlappingNoteOrRow,
+			  -fNoteOffset,
+			  pTN->type,
+			  pTN->subType);
+		}
+
+		else if (row == -1) {
 			fNoteOffset = (fStepSeconds - fMusicSeconds) / fMusicRate;
 			// input data (a real tap mapped to a note any distance away)
 			// this also skips things like mines hit by CrossedRows (holding)

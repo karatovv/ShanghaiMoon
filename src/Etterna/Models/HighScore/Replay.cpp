@@ -2131,7 +2131,7 @@ Replay::VerifyGeneratedInputDataMatchesReplayData()
 
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
-				cws += wife3(vOffsetVector.at(i), 1);
+				cws += wife3(vOffsetVector.at(i), 8);
 				j = true;
 			} else if (type == TapNoteType_Mine) {
 				minehits++;
@@ -2309,7 +2309,7 @@ Replay::VerifyInputDataAndReplayData()
 
 			if (type == TapNoteType_Tap || type == TapNoteType_HoldHead ||
 				type == TapNoteType_Lift) {
-				cws += wife3(vOffsetVector.at(i), 1);
+				cws += wife3(vOffsetVector.at(i), 8);
 				j = true;
 			} else if (type == TapNoteType_Mine) {
 				minehits++;
