@@ -833,7 +833,7 @@ PlayerReplay::Step(int col,
 						// are counted as misses
 						// but to stop it breaking things, do nothing
 						if (score == TNS_Miss) {
-							score = TNS_None;
+							score = TNS_Miss;
 						}
 					}
 				}
@@ -919,11 +919,8 @@ PlayerReplay::Step(int col,
 	}
 
 	if (!bRelease) {
-		if (m_pNoteField != nullptr &&
-			col != -1) { // skip misses to emulate missing.
-			if (score != TNS_Miss) {
-				m_pNoteField->Step(col, score);
-			}
+		if (m_pNoteField != nullptr && col != -1) {
+			m_pNoteField->Step(col, score);
 		}
 		Message msg("Step");
 		msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);

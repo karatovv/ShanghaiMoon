@@ -187,7 +187,6 @@ LoadFromSMNoteDataStringWithPlayer(NoteData& out,
 					// Don't be loose with the definition.  Use only 'M' since
 					// that's what we've been writing to disk.  -Chris
 					case 'M':
-						tn = TAP_ORIGINAL_MINE;
 						break;
 					// case 'A': tn = TAP_ORIGINAL_ATTACK;			break;
 					case 'K':

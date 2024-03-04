@@ -2093,7 +2093,7 @@ Player::Step(int col,
 
 		if (row == -1 && pTN->type == TapNoteType_Lift) {
 			fNoteOffset = (fStepSeconds - fMusicSeconds) / fMusicRate;
-			fNoteOffset = fNoteOffset / 2.f;
+			fNoteOffset = fNoteOffset / 1.5f;
 			// input data (a real tap mapped to a note any distance away)
 			// this also skips things like mines hit by CrossedRows (holding)
 			m_pPlayerStageStats->InputData.emplace_back(
