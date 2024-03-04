@@ -68,7 +68,7 @@ local t = Def.ActorFrame {
 
 local frameX = 10
 local frameY = 45
-local frameWidth = capWideScale(360, 400)
+local frameWidth = capWideScale(360, 400) + 25
 local frameHeight = 350
 local fontScale = 0.25
 local scoresperpage = 20
@@ -444,7 +444,7 @@ local function recentLabel(i)
 		LoadFont("Common Large") .. {
 			Name = "rectext1",
 			InitCommand = function(self)
-				self:halign(0):zoom(fontScale)
+				self:halign(0):zoom(fontScale):addx(23)
 				self:maxwidth(100)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
@@ -459,7 +459,7 @@ local function recentLabel(i)
 			Name = "rectext2",
 			InitCommand = function(self)
 				self:halign(0):zoom(fontScale)
-				self:x(15):maxwidth(160)
+				self:x(15):maxwidth(160):addx(25)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
 				if ths then
@@ -474,7 +474,7 @@ local function recentLabel(i)
 			Name = "rectext3",
 			InitCommand = function(self)
 				self:halign(0):zoom(fontScale)
-				self:x(55):maxwidth(580)
+				self:x(55):maxwidth(580):addx(25)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
 				if thssong and ths then
@@ -489,7 +489,7 @@ local function recentLabel(i)
 			Name = "rectext4",
 			InitCommand = function(self)
 				self:halign(0):zoom(fontScale)
-				self:x(220)
+				self:x(220):addx(25)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
 				if ths then
@@ -506,7 +506,7 @@ local function recentLabel(i)
 			Name = "rectext5",
 			InitCommand = function(self)
 				self:halign(0):zoom(fontScale)
-				self:x(240):maxwidth(160)
+				self:x(240):maxwidth(160):addx(25)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
 				if ths then
@@ -525,7 +525,7 @@ local function recentLabel(i)
 			Name = "rectext6",
 			InitCommand = function(self)
 				self:halign(0):zoom(fontScale)
-				self:x(300)
+				self:x(300):addx(25)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
 				self:halign(0.5)
@@ -542,7 +542,7 @@ local function recentLabel(i)
 			Name = "rectext7",
 			--date
 			InitCommand = function(self)
-				self:x(312):zoom(fontScale + 0.05):halign(0)
+				self:x(312):zoom(fontScale + 0.05):halign(0):addx(25)
 			end,
 			DisplayProfileRankingLabelsMessageCommand = function(self)
 				if ths then
@@ -789,7 +789,7 @@ r[#r + 1] = Def.ActorFrame {
 	end,
 	UIElements.QuadButton(1, 1) .. {
 		InitCommand = function(self)
-			self:xy(capWideScale(300,336.25), -8.5):zoomto(40, 20):halign(0):valign(0):diffuse(getMainColor("frames")):diffusealpha(0.2)
+			self:xy(capWideScale(300,336.25), -8.5):zoomto(40, 20):halign(0):valign(0):diffuse(getMainColor("frames")):diffusealpha(0.2):addx(25)
 		end,
 		MouseDownCommand = function(self, params)
 			if params.event == "DeviceButton_left mouse button" then
@@ -814,7 +814,7 @@ r[#r + 1] = Def.ActorFrame {
 	LoadFont("Common Large") .. {
 		Name = "NextP",
 		InitCommand = function(self)
-			self:x(capWideScale(304.25,340)):halign(0):zoom(0.3):diffuse(getMainColor("positive")):settext(translated_info["NextPage"])
+			self:x(capWideScale(304.25,340)):halign(0):zoom(0.3):diffuse(getMainColor("positive")):settext(translated_info["NextPage"]):addx(25)
 		end,
 	},
 	UIElements.QuadButton(1, 1) .. {
