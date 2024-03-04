@@ -49,7 +49,7 @@ t[#t + 1] = LoadActor("../_PlayerInfo")
 
 if showVisualizer then
 	local vis = audioVisualizer:new {
-		x = 175,
+		x = 195,
 		y = 30,
 		maxHeight = 30,
 		freqIntervals = audioVisualizer.multiplyIntervals(audioVisualizer.defaultIntervals, 5),
@@ -75,7 +75,7 @@ t[#t + 1] = LoadActor("currentsort")
 t[#t + 1] = UIElements.TextToolTip(1, 1, "Common Large") .. {
 	Name="rando",
 	InitCommand = function(self)
-		self:xy(5, 32):halign(0):valign(1):zoom(0.55):diffuse(getMainColor("positive"))
+		self:xy(5, 29):halign(0):valign(1):zoom(0.55):diffuse(getMainColor("positive"))
 		self:settextf("%s:", THEME:GetString("ScreenSelectMusic", "Title"))
 	end,
 	MouseOverCommand = function(self)

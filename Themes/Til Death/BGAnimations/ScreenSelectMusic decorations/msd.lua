@@ -130,7 +130,7 @@ local function littlebits(i)
 		},
 		LoadFont("Common Large") .. {
 			InitCommand = function(self)
-				self:xy(frameX + 240, frameY + 100 + txtDist * i):halign(1):valign(0):zoom(0.55):maxwidth(110 / 0.55)
+				self:xy(frameX + 240, frameY + 100 + txtDist * i):halign(1):valign(0):zoom(0.55):maxwidth(110 / 0.55):addx(10)
 			end,
 			SetCommand = function(self)
 				if song and steps then
