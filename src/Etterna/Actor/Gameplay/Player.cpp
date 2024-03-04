@@ -2097,7 +2097,7 @@ Player::Step(int col,
 			// input data (a real tap mapped to a note any distance away)
 			// this also skips things like mines hit by CrossedRows (holding)
 			m_pPlayerStageStats->InputData.emplace_back(
-			  bRelease,
+			  !bRelease,
 			  col,
 			  fMusicSeconds,
 			  iRowOfOverlappingNoteOrRow,
