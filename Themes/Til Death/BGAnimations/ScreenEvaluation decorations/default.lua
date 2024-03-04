@@ -391,7 +391,7 @@ local function scoreBoard(pn, position)
 		LoadFont("Common Large") .. {
 			Name = "MSDDisplay",
 			InitCommand = function(self)
-				self:xy(frameX + 3, frameY + 32)
+				self:xy(frameX + 3, frameY + 33)
 				self:zoom(0.5)
 				self:halign(0):valign(0)
 				self:maxwidth(200)
@@ -424,7 +424,7 @@ local function scoreBoard(pn, position)
 		LoadFont("Common Large") .. {
 			Name = "SSRDisplay",
 			InitCommand = function(self)
-				self:xy(frameWidth + frameX - 3, frameY + 32)
+				self:xy(frameWidth + frameX - 3, frameY + 33)
 				self:zoom(0.5)
 				self:halign(1):valign(0)
 				self:maxwidth(200)
@@ -605,19 +605,18 @@ local function scoreBoard(pn, position)
 					local rescoretable = getRescoreElements(score)
 					local rescorepercent = 0
 					local wv = score:GetWifeVers()
-					local ws = "Wife3" .. " J"
-					if params.Name == "PrevJudge" and judge2 > 4 then
+					local ws = "osu!mania OD"
+					if params.Name == "PrevJudge" and judge2 > 0 then
 						judge2 = judge2 - 1
 						rescorepercent = getRescoredWife3Judge(3, judge2, rescoretable)
 						self:settextf(
 							"%05.4f%% (%s)", notShit.floor(rescorepercent, 4), ws .. judge2
 						)
-					elseif params.Name == "NextJudge" and judge2 < 9 then
+					elseif params.Name == "NextJudge" and judge2 < 10 then
 						judge2 = judge2 + 1
 						rescorepercent = getRescoredWife3Judge(3, judge2, rescoretable)
-						local js = judge2 ~= 9 and judge2 or "ustice"
 						self:settextf(
-						"%05.4f%% (%s)", notShit.floor(rescorepercent, 4), ws .. js
+						"%05.4f%% (%s)", notShit.floor(rescorepercent, 4), ws .. judge2
 					)
 					end
 					if params.Name == "ResetJudge" then

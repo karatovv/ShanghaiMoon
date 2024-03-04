@@ -150,7 +150,7 @@ local function stepsRows(i)
 		--chart difficulty name
 		LoadFont("Common Large") .. {
 			InitCommand = function(self)
-				self:x(12):zoom(0.18):settext(""):halign(0.5):valign(0)
+				self:x(12):zoom(0.16):settext(""):halign(0.5):valign(0):addy(1)
 			end,
 			UpdateStepsRowsCommand = function(self)
 				local steps = thesteps[i + displayindexoffset]
@@ -165,7 +165,7 @@ local function stepsRows(i)
 		--chart steps type
 		LoadFont("Common Large") .. {
 			InitCommand = function(self)
-				self:x(12):addy(-9):zoom(0.18):settext(""):halign(0.5):valign(0):maxwidth(23 / 0.18)
+				self:x(12):addy(-8):zoom(0.16):settext(""):halign(0.5):valign(0):maxwidth(23 / 0.18)
 			end,
 			UpdateStepsRowsCommand = function(self)
 				local steps = thesteps[i + displayindexoffset]

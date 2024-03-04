@@ -413,8 +413,11 @@ o[#o + 1] = Def.ActorMultiVertex {
 			cullur[4] = 1
 			local cullurFaded = {}
 
-			if math.abs(y) > plotHeight / 2 then
+			if (math.abs(y) > plotHeight / 2) and y < 0 then
 				y = fitY(fit)
+			end
+			if (math.abs(y) > plotHeight / 2) and y > 0 then
+				y = -fitY(fit)
 			end
 
 			-- if fading by hands, get the faded color
