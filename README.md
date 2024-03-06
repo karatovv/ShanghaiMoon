@@ -1,6 +1,6 @@
-Osu! scoring system and gameplay in Etterna:
+<h2 align="center">Osu! scoring system and gameplay in Etterna</h2>
 
-1. Note priority is the same as in osu!. Priority determines the order in which notes are accepted. In Etterna, the closest note to the receptor is accepted first, in osu! - the oldest and not missed one.
+1. Note priority is the same as in osu!. Priority determines the order in which notes are judged. In Etterna, the closest note to the receptor is accepted first, in osu! - the oldest and not missed one.
 <h3 align="center">Simple visual explanation:</h3>
 
 <p align="center">
@@ -19,7 +19,7 @@ Osu! scoring system and gameplay in Etterna:
 
 6. Combo breaks only appear if you miss a note.
 
-7. Hidenote Judgment is set to Miss by default. Hidenote Judgment function determines at which grades a note will disappear after being hit. If set to Miss, the note will only disappear if you miss it, otherwise it will continue to travel down the lane.
+7. Hidenote Judgment is set to Miss by default. Hidenote Judgment function determines at which grades a note will disappear after being hit. If set to Miss, the note will disappear on any judgment result except a Miss, otherwise it will continue to travel down the lane.
 
 
 Some features that are not present in Etterna were also added. For example: custom backgrounds for all charts, song intro skip. 
