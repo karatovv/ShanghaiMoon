@@ -1,13 +1,15 @@
 Osu! scoring system and gameplay in etterna:
 
 1.Note priority is the same as in osu!. Priority determines the order in which notes are accepted. In Etterna, the closest note to the receptor is accepted first, in osu! - the oldest and not missed one.
+
 Simple visual explanation:
 
 <p align="left">
-    <img src="Docs/images/prior.png">
+    <img src="Docs/images/prior.png" width=200px height=200px>
 </p>
 
 The numbers on this image indicate the order in which notes will be judged.
+
 2.Accuracy scoring is exactly like ScoreV1 in osu!, however osu! points are not implemented yet!
 3.Long notes behave as if ScoreV2 is enabled in osu! (1 long note - 2 grades)
 4.Timing windows correspond to osu! timing windows. You can choose from OD0 to OD10, and also enable HardRock.
