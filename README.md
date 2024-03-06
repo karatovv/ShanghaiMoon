@@ -1,7 +1,7 @@
 Osu! scoring system and gameplay in etterna:
 
 1. Note priority is the same as in osu!. Priority determines the order in which notes are accepted. In Etterna, the closest note to the receptor is accepted first, in osu! - the oldest and not missed one.
-<h1 align="center">Simple visual explanation:</h1>
+<h3 align="center">Simple visual explanation:</h3>
 
 <p align="center">
     <img src="Docs/images/prior.png" width=600px height=300px>
