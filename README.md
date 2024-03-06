@@ -26,7 +26,7 @@ Some features that are not present in Etterna were also added. For example: cust
 
 -----------------------------------
 
-IMPORTANT:
+<strong>IMPORTANT:</strong>
 
 Do not use "Save" and "Cache" folder from Etterna if you don't know what you are doing. 
 
@@ -36,6 +36,8 @@ Do not compare your scores from this client with scores from original Etterna cl
 
 The latest version is always recommended for use unless stated otherwise on the release page. Scores set in older versions may be broken in newer ones.
 
+If you have any questions regarding this client, please do not ask them on the Etterna discord server. Nobody is obligated to answer you there, and most likely won't. It's better to dm on discord.
+
 -----------------------------------
 
 Please note that this client is still in development and far from perfect! 
@@ -43,9 +45,6 @@ Please note that this client is still in development and far from perfect!
 If you encounter any bugs, chances are I am aware of them but have not yet figured out how to fix them (or simply just didn't feel like it). 
 
 For example, now I am using ScoreV2 Long Notes because I don't know how to implement ScoreV1 Long Notes without encountering numerous issues.
-
-
-If you have any questions regarding this client, please do not ask them on the Etterna discord server. Nobody is obligated to answer you there, and most likely won't. It's better to dm on discord.
 
 -----------------------------------
 
