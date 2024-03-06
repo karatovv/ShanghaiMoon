@@ -36,7 +36,7 @@ Do not compare your scores from this client with scores from original Etterna cl
 
 The latest version is always recommended for use unless stated otherwise on the release page. Scores set in older versions may be broken in newer ones.
 
-If you have any questions regarding this client, please do not ask them on the Etterna discord server. Nobody is obligated to answer you there, and most likely won't. It's better to dm on discord.
+If you have any questions regarding this client, please do not ask them on the Etterna discord server. Nobody is obligated to answer you there, and most likely won't. It's better to dm me on discord.
 
 -----------------------------------
 
