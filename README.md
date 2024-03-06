@@ -1,26 +1,25 @@
 Osu! scoring system and gameplay in etterna:
 
-1.Note priority is the same as in osu!. Priority determines the order in which notes are accepted. In Etterna, the closest note to the receptor is accepted first, in osu! - the oldest and not missed one.
+1. Note priority is the same as in osu!. Priority determines the order in which notes are accepted. In Etterna, the closest note to the receptor is accepted first, in osu! - the oldest and not missed one.
+<h1 align="center">Simple visual explanation:</h1>
 
-Simple visual explanation:
-
-<p align="left">
+<p align="center">
     <img src="Docs/images/prior.png" width=600px height=300px>
 </p>
 
-The numbers on this image indicate the order in which notes will be judged.
+<p align="center">The numbers on this image indicate the order in which notes will be judged.</p>
 
-2.Accuracy scoring is exactly like ScoreV1 in osu!, however osu! points are not implemented yet!
+2. Accuracy scoring is exactly like ScoreV1 in osu!, however osu! points are not implemented yet!
 
-3.Long notes behave as if ScoreV2 is enabled in osu! (1 long note - 2 grades)
+3. Long notes behave as if ScoreV2 is enabled in osu! (1 long note - 2 grades)
 
-4.Timing windows correspond to osu! timing windows. You can choose from OD0 to OD10, and also enable HardRock.
+4. Timing windows correspond to osu! timing windows. You can choose from OD0 to OD10, and also enable HardRock.
 
-5.HP system remains the same as in Etterna. Default is Life2.
+5. HP system remains the same as in Etterna. Default is Life2.
 
-6.Combo breaks only appear if you miss a note.
+6. Combo breaks only appear if you miss a note.
 
-7.Hidenote Judgment is set to Miss by default. Hidenote Judgment function determines at which grades a note will disappear after being hit. If set to Miss, the note will only disappear if you miss it, otherwise it will continue to travel down the lane.
+7. Hidenote Judgment is set to Miss by default. Hidenote Judgment function determines at which grades a note will disappear after being hit. If set to Miss, the note will only disappear if you miss it, otherwise it will continue to travel down the lane.
 
 
 Some features that are not present in Etterna were also added. For example: customizable backgrounds for all charts, song intro skip.
