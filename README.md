@@ -19,7 +19,7 @@
 
 6. Combo breaks only appear if you miss a note.
 
-7. Hidenote Judgment is set to Miss by default. Hidenote Judgment function determines at which grades a note will disappear after being hit. If set to Miss, the note will disappear on any judgment result except a Miss, otherwise it will continue to travel down the lane.
+7. Hidenote Judgment is set to Miss by default. Hidenote Judgment function determines at which grades a note will disappear after being hit. If set to Miss, the note will disappear on any judgment result except a Miss.
 
 
 Some features that are not present in Etterna were also added. For example: custom backgrounds for all charts, song intro skip. 
